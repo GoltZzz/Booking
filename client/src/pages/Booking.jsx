@@ -82,9 +82,14 @@ const Booking = () => {
 
 		try {
 			const bookingData = {
-				...formData,
-				package: selectedPackage._id,
-				totalAmount: selectedPackage.price,
+				bookingDate: formData.date,
+				startTime: formData.startTime,
+				endTime: formData.endTime,
+				duration: selectedPackage.duration,
+				category: formData.eventType,
+				packageType: selectedPackage.name,
+				specialRequests: formData.additionalNotes,
+				location: formData.location,
 			};
 
 			await bookingApi.createBooking(bookingData);
@@ -144,11 +149,10 @@ const Booking = () => {
 								onChange={handleChange}
 								required>
 								<option value="">Select Event Type</option>
-								<option value="Wedding">Wedding</option>
 								<option value="Birthday">Birthday</option>
-								<option value="Corporate">Corporate Event</option>
-								<option value="Graduation">Graduation</option>
-								<option value="Other">Other</option>
+								<option value="Wedding pre-nup">Wedding pre-nup</option>
+								<option value="Debut photoshoot">Debut photoshoot</option>
+								<option value="Maternity">Maternity</option>
 							</select>
 						</div>
 

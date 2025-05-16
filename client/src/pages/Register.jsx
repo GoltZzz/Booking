@@ -36,7 +36,6 @@ const Register = () => {
 		setLoading(true);
 
 		try {
-			// Remove confirmPassword before sending to API
 			const { confirmPassword, ...registerData } = formData;
 
 			const response = await userApi.register(registerData);

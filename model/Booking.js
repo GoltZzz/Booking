@@ -19,7 +19,12 @@ const bookingSchema = new mongoose.Schema({
 		required: true,
 	},
 	duration: {
-		type: Number, // in hours
+		type: Number,
+		required: true,
+	},
+	category: {
+		type: String,
+		enum: ["Birthday", "Wedding pre-nup", "Debut photoshoot", "Maternity"],
 		required: true,
 	},
 	packageType: {

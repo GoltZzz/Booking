@@ -2,18 +2,15 @@ const User = require("../model/User");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-// Register a new user
 const register = async (req, res) => {
 	try {
 		const { name, email, password, phone } = req.body;
 
-		// Check if user already exists
 		const existingUser = await User.findOne({ email });
 		if (existingUser) {
 			return res.status(400).json({ error: "Email already in use" });
 		}
 
-		// Create new user
 		const user = new User({
 			name,
 			email,
@@ -23,7 +20,6 @@ const register = async (req, res) => {
 
 		await user.save();
 
-		// Generate JWT token
 		const token = jwt.sign(
 			{ userId: user._id },
 			process.env.JWT_SECRET || "your-fallback-secret",
@@ -44,7 +40,6 @@ const register = async (req, res) => {
 	}
 };
 
-// Login user
 const login = async (req, res) => {
 	try {
 		const { email, password } = req.body;
@@ -61,7 +56,6 @@ const login = async (req, res) => {
 			return res.status(401).json({ error: "Invalid email or password" });
 		}
 
-		// Generate JWT token
 		const token = jwt.sign(
 			{ userId: user._id },
 			process.env.JWT_SECRET || "your-fallback-secret",
@@ -82,7 +76,6 @@ const login = async (req, res) => {
 	}
 };
 
-// Get user profile
 const getProfile = async (req, res) => {
 	try {
 		const user = await User.findById(req.user._id).select("-password");

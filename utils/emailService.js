@@ -5,13 +5,6 @@ const mg = mailgun({
 	apiKey: process.env.MAILGUN_API_KEY,
 	domain: process.env.MAILGUN_DOMAIN,
 });
-
-/**
- * Send confirmation email to user after booking
- * @param {Object} booking - The booking object
- * @param {Object} user - The user object
- * @returns {Promise} - Mailgun send promise
- */
 const sendBookingConfirmation = (booking, user) => {
 	const data = {
 		from: `MJ Studios <noreply@${process.env.MAILGUN_DOMAIN}>`,
@@ -37,13 +30,6 @@ const sendBookingConfirmation = (booking, user) => {
 
 	return mg.messages().send(data);
 };
-
-/**
- * Send reminder email to user before booking
- * @param {Object} booking - The booking object
- * @param {Object} user - The user object
- * @returns {Promise} - Mailgun send promise
- */
 const sendBookingReminder = (booking, user) => {
 	const data = {
 		from: `MJ Studios <noreply@${process.env.MAILGUN_DOMAIN}>`,

@@ -3,7 +3,6 @@ const router = express.Router();
 const bookingController = require("../controller/bookingController");
 const { authenticateToken } = require("../middleware");
 
-// All booking routes require authentication
 router.use(authenticateToken);
 
 // Booking routes

@@ -7,7 +7,11 @@ import {
 	FiCalendar,
 	FiCamera,
 } from "react-icons/fi";
-import LogoImage from "../assets/images/Logo.jpg"; // Using the correct file extension
+import LogoImage from "../assets/images/Logo.jpg";
+import BirthdayImage from "../assets/images/birthday.jpg";
+import WeddingImage from "../assets/images/wedding pre-nup.jpg";
+import DebutImage from "../assets/images/debut.jpg";
+import MaternityImage from "../assets/images/maternity.jpg";
 
 const LandingPage = () => {
 	const [searchData, setSearchData] = useState({
@@ -27,50 +31,44 @@ const LandingPage = () => {
 	const handleSearch = (e) => {
 		e.preventDefault();
 		console.log("Search data:", searchData);
-		// Implement search functionality
 	};
 
-	// Mock data for featured listings
 	const featuredListings = [
 		{
 			id: 1,
-			title: "Professional Studio with Natural Light",
-			location: "Downtown, New York",
+			title: "Birthday Photoshoot",
+			location: "MJ Studios, New York",
 			rating: 4.9,
 			reviewCount: 124,
 			price: 150,
-			image:
-				"https://images.unsplash.com/photo-1558180702-95f1c3ae2ca3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+			image: BirthdayImage,
 		},
 		{
 			id: 2,
-			title: "Vintage Theme Photography Space",
-			location: "Brooklyn, New York",
+			title: "Wedding Pre-nup Photography",
+			location: "MJ Studios, New York",
 			rating: 4.8,
 			reviewCount: 98,
-			price: 120,
-			image:
-				"https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+			price: 175,
+			image: WeddingImage,
 		},
 		{
 			id: 3,
-			title: "Modern Minimalist Photo Studio",
-			location: "Los Angeles, California",
+			title: "Debut Photoshoot",
+			location: "MJ Studios, California",
 			rating: 4.95,
 			reviewCount: 156,
 			price: 180,
-			image:
-				"https://images.unsplash.com/photo-1616763355548-1b606f439f86?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+			image: DebutImage,
 		},
 		{
 			id: 4,
-			title: "Urban Rooftop Photoshoot Location",
-			location: "Chicago, Illinois",
+			title: "Maternity Photoshoot",
+			location: "MJ Studios, Illinois",
 			rating: 4.85,
 			reviewCount: 112,
 			price: 160,
-			image:
-				"https://images.unsplash.com/photo-1581338334642-8a779762ee3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+			image: MaternityImage,
 		},
 	];
 
@@ -104,11 +102,9 @@ const LandingPage = () => {
 
 	return (
 		<div className="landing-page bg-[#121212]">
-			{/* Header */}
 			<header className="bg-[#1e1e1e] shadow-md sticky top-0 z-10">
 				<div className="container-custom py-3 flex justify-between items-center">
 					<Link to="/" className="flex items-center">
-						{/* Use the MJ Studios logo */}
 						<img
 							src={LogoImage}
 							alt="MJ Studios Logo"
@@ -158,7 +154,6 @@ const LandingPage = () => {
 				</div>
 			</header>
 
-			{/* Hero Section */}
 			<section
 				className="relative h-[600px] bg-cover bg-center"
 				style={{
@@ -175,7 +170,6 @@ const LandingPage = () => {
 						photoshoot
 					</p>
 
-					{/* Search Bar */}
 					<form
 						onSubmit={handleSearch}
 						className="w-full max-w-4xl bg-[#1e1e1e] rounded-lg shadow-xl overflow-hidden border border-[#333333]">
@@ -233,15 +227,14 @@ const LandingPage = () => {
 				</div>
 			</section>
 
-			{/* Featured Listings Section */}
 			<section className="py-16 bg-[#121212]">
 				<div className="container-custom">
 					<div className="mb-10">
 						<h2 className="text-3xl font-bold mb-2 text-[#e0e0e0]">
-							Featured Photography Spaces
+							Photography Categories
 						</h2>
 						<p className="text-gray-400">
-							Discover top-rated photoshoot locations in your area
+							Explore our specialized photoshoot services for every occasion
 						</p>
 					</div>
 
@@ -277,12 +270,12 @@ const LandingPage = () => {
 										<span className="text-[#bb86fc] font-bold">
 											${listing.price}
 										</span>{" "}
-										/ hour
+										/ session
 									</div>
 									<Link
-										to={`/listing/${listing.id}`}
+										to="/booking"
 										className="block text-center py-2 px-4 border border-[#bb86fc] text-[#bb86fc] rounded-md hover:bg-[#bb86fc] hover:text-[#121212] transition-colors">
-										View Details
+										Book Now
 									</Link>
 								</div>
 							</div>
@@ -293,13 +286,12 @@ const LandingPage = () => {
 						<Link
 							to="/explore"
 							className="bg-[#bb86fc] text-[#121212] px-8 py-3 rounded-md hover:bg-[#a06cd5] transition-colors">
-							Explore All Spaces
+							Book a Session
 						</Link>
 					</div>
 				</div>
 			</section>
 
-			{/* How It Works Section */}
 			<section className="py-16 bg-[#1e1e1e]">
 				<div className="container-custom">
 					<div className="text-center mb-12">
@@ -354,7 +346,6 @@ const LandingPage = () => {
 				</div>
 			</section>
 
-			{/* Testimonials Section */}
 			<section className="py-16 bg-[#121212]">
 				<div className="container-custom">
 					<div className="text-center mb-12">
@@ -400,7 +391,6 @@ const LandingPage = () => {
 				</div>
 			</section>
 
-			{/* CTA Section */}
 			<section className="py-16 bg-[#03dac6]">
 				<div className="container-custom text-center">
 					<h2 className="text-3xl font-bold mb-4 text-[#121212]">
@@ -418,7 +408,6 @@ const LandingPage = () => {
 				</div>
 			</section>
 
-			{/* Footer */}
 			<footer className="bg-[#1e1e1e] text-gray-400">
 				<div className="container-custom py-12">
 					<div className="grid grid-cols-1 md:grid-cols-4 gap-8">

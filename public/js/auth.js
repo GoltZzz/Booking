@@ -1,31 +1,22 @@
-/**
- * Authentication utilities for MJ Studios Photo Booth Booking
- */
-
-// Check if user is logged in
 function isLoggedIn() {
 	return localStorage.getItem("token") !== null;
 }
 
-// Get current user
 function getCurrentUser() {
 	const userJson = localStorage.getItem("user");
 	return userJson ? JSON.parse(userJson) : null;
 }
 
-// Get auth token
 function getToken() {
 	return localStorage.getItem("token");
 }
 
-// Logout user
 function logout() {
 	localStorage.removeItem("token");
 	localStorage.removeItem("user");
 	window.location.href = "/";
 }
 
-// Protected route check
 function checkAuth() {
 	if (!isLoggedIn()) {
 		window.location.href =
@@ -35,7 +26,6 @@ function checkAuth() {
 	return true;
 }
 
-// API request with authentication
 async function authenticatedFetch(url, options = {}) {
 	const token = getToken();
 
@@ -54,7 +44,6 @@ async function authenticatedFetch(url, options = {}) {
 		headers,
 	});
 
-	// Handle unauthorized response
 	if (response.status === 401) {
 		logout();
 		throw new Error("Your session has expired. Please login again.");
@@ -63,7 +52,6 @@ async function authenticatedFetch(url, options = {}) {
 	return response;
 }
 
-// Update navigation based on auth status
 function updateNavigation() {
 	const isAuthenticated = isLoggedIn();
 	const loginLink = document.getElementById("loginLink");
@@ -84,11 +72,9 @@ function updateNavigation() {
 	}
 }
 
-// Initialize auth on page load
 document.addEventListener("DOMContentLoaded", function () {
 	updateNavigation();
 
-	// Add logout event listener
 	const logoutBtn = document.getElementById("logoutBtn");
 	if (logoutBtn) {
 		logoutBtn.addEventListener("click", function (e) {

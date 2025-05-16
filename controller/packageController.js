@@ -1,6 +1,5 @@
 const Package = require("../model/Package");
 
-// Get all available packages
 const getAllPackages = async (req, res) => {
 	try {
 		const packages = await Package.find({ isAvailable: true });
@@ -10,7 +9,6 @@ const getAllPackages = async (req, res) => {
 	}
 };
 
-// Get package by ID
 const getPackageById = async (req, res) => {
 	try {
 		const package = await Package.findById(req.params.id);
@@ -25,7 +23,6 @@ const getPackageById = async (req, res) => {
 	}
 };
 
-// Create default packages if they don't exist
 const createDefaultPackages = async () => {
 	try {
 		const count = await Package.countDocuments();
