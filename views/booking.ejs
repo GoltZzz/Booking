@@ -1,0 +1,545 @@
+<%- include('layout', { title: 'Book a Photo Booth' }) %>
+
+<div class="container py-5">
+	<div class="row">
+		<div class="col-lg-8">
+			<h1 class="mb-4">Book Your Photo Booth</h1>
+
+			<!-- Authentication Check Alert -->
+			<div
+				class="alert alert-warning mb-4"
+				id="authAlert"
+				style="display: none">
+				<p>
+					Please <a href="/login">login</a> or
+					<a href="/register">register</a> to book a photo booth.
+				</p>
+			</div>
+
+			<!-- Booking Form -->
+			<div class="card shadow-sm mb-4" id="bookingForm" style="display: none">
+				<div class="card-body p-4">
+					<h3 class="card-title mb-4">Booking Details</h3>
+
+					<div
+						class="alert alert-danger"
+						id="bookingError"
+						style="display: none"></div>
+
+					<form id="photoBoothBookingForm">
+						<div class="row mb-3">
+							<div class="col-md-6">
+								<label for="bookingDate" class="form-label">Date</label>
+								<input
+									type="date"
+									class="form-control"
+									id="bookingDate"
+									required
+									min="" />
+							</div>
+
+							<div class="col-md-6">
+								<label for="packageType" class="form-label">Package</label>
+								<select class="form-select" id="packageType" required>
+									<option value="">Select a package</option>
+									<option value="Basic">Basic ($199)</option>
+									<option value="Standard">Standard ($299)</option>
+									<option value="Premium">Premium ($399)</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="row mb-3">
+							<div class="col-md-6">
+								<label for="startTime" class="form-label">Start Time</label>
+								<select class="form-select" id="startTime" required disabled>
+									<option value="">Select date first</option>
+								</select>
+							</div>
+
+							<div class="col-md-6">
+								<label for="duration" class="form-label">Duration</label>
+								<select class="form-select" id="duration" required disabled>
+									<option value="">Select package first</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label for="specialRequests" class="form-label"
+								>Special Requests (Optional)</label
+							>
+							<textarea
+								class="form-control"
+								id="specialRequests"
+								rows="3"></textarea>
+						</div>
+
+						<div class="d-grid gap-2">
+							<button type="submit" class="btn btn-primary btn-lg">
+								Book Now
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-4">
+			<!-- Booking Summary -->
+			<div
+				class="card shadow-sm mb-4"
+				id="bookingSummary"
+				style="display: none">
+				<div class="card-body p-4">
+					<h3 class="card-title mb-4">Booking Summary</h3>
+
+					<div class="mb-3">
+						<div class="d-flex justify-content-between">
+							<span>Date:</span>
+							<span id="summaryDate">-</span>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<div class="d-flex justify-content-between">
+							<span>Time:</span>
+							<span id="summaryTime">-</span>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<div class="d-flex justify-content-between">
+							<span>Package:</span>
+							<span id="summaryPackage">-</span>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<div class="d-flex justify-content-between">
+							<span>Duration:</span>
+							<span id="summaryDuration">-</span>
+						</div>
+					</div>
+
+					<hr />
+
+					<div class="mb-3">
+						<div class="d-flex justify-content-between fw-bold">
+							<span>Total Price:</span>
+							<span id="summaryPrice">$0</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Package Details -->
+			<div class="card shadow-sm">
+				<div class="card-body p-4">
+					<h3 class="card-title mb-3">Package Details</h3>
+
+					<div class="accordion" id="packageAccordion">
+						<div class="accordion-item">
+							<h2 class="accordion-header">
+								<button
+									class="accordion-button"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target="#basicPackage">
+									Basic Package - $199
+								</button>
+							</h2>
+							<div
+								id="basicPackage"
+								class="accordion-collapse collapse show"
+								data-bs-parent="#packageAccordion">
+								<div class="accordion-body">
+									<p>Standard photo booth experience for 1 hour</p>
+									<ul class="list-unstyled">
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Unlimited
+											photos
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Basic props
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Digital
+											copies
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Online
+											gallery
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+
+						<div class="accordion-item">
+							<h2 class="accordion-header">
+								<button
+									class="accordion-button collapsed"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target="#standardPackage">
+									Standard Package - $299
+								</button>
+							</h2>
+							<div
+								id="standardPackage"
+								class="accordion-collapse collapse"
+								data-bs-parent="#packageAccordion">
+								<div class="accordion-body">
+									<p>Enhanced photo booth experience for 2 hours</p>
+									<ul class="list-unstyled">
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Unlimited
+											photos
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Premium
+											props
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Digital
+											copies
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Online
+											gallery
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Custom
+											backdrop
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Social
+											media sharing
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+
+						<div class="accordion-item">
+							<h2 class="accordion-header">
+								<button
+									class="accordion-button collapsed"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target="#premiumPackage">
+									Premium Package - $399
+								</button>
+							</h2>
+							<div
+								id="premiumPackage"
+								class="accordion-collapse collapse"
+								data-bs-parent="#packageAccordion">
+								<div class="accordion-body">
+									<p>Ultimate photo booth experience for 3 hours</p>
+									<ul class="list-unstyled">
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Unlimited
+											photos
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Premium
+											props
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Digital
+											copies
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Online
+											gallery
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Custom
+											backdrop
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Social
+											media sharing
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Photo album
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> On-site
+											attendant
+										</li>
+										<li>
+											<i class="fas fa-check text-success me-2"></i> Video
+											messages
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Success Modal -->
+<div
+	class="modal fade"
+	id="bookingSuccessModal"
+	tabindex="-1"
+	aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Booking Successful</h5>
+				<button
+					type="button"
+					class="btn-close"
+					data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="text-center mb-4">
+					<i
+						class="fas fa-check-circle text-success"
+						style="font-size: 4rem"></i>
+					<h4 class="mt-3">Thank You!</h4>
+					<p>
+						Your photo booth booking has been confirmed. A confirmation email
+						has been sent to your email address.
+					</p>
+				</div>
+				<div class="d-grid gap-2">
+					<a href="/dashboard" class="btn btn-primary">View My Bookings</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<% block('script', `
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// Check if user is logged in
+		const token = localStorage.getItem("token");
+		const authAlert = document.getElementById("authAlert");
+		const bookingForm = document.getElementById("bookingForm");
+		const bookingSummary = document.getElementById("bookingSummary");
+
+		if (!token) {
+			authAlert.style.display = "block";
+		} else {
+			bookingForm.style.display = "block";
+			bookingSummary.style.display = "block";
+		}
+
+		// Set min date to today
+		const today = new Date().toISOString().split("T")[0];
+		document.getElementById("bookingDate").min = today;
+
+		// Pre-fill from URL parameters
+		const urlParams = new URLSearchParams(window.location.search);
+		if (urlParams.has("date")) {
+			document.getElementById("bookingDate").value = urlParams.get("date");
+		}
+		if (urlParams.has("package")) {
+			document.getElementById("packageType").value = urlParams.get("package");
+			updateDuration();
+		}
+
+		// Handle date change
+		document
+			.getElementById("bookingDate")
+			.addEventListener("change", function () {
+				const date = this.value;
+				if (date) {
+					fetchAvailableTimeSlots(date);
+				}
+			});
+
+		// Handle package change
+		document
+			.getElementById("packageType")
+			.addEventListener("change", function () {
+				updateDuration();
+				updateSummary();
+			});
+
+		// Handle start time change
+		document
+			.getElementById("startTime")
+			.addEventListener("change", function () {
+				updateSummary();
+			});
+
+		// Handle duration change
+		document.getElementById("duration").addEventListener("change", function () {
+			updateSummary();
+		});
+
+		// Form submission
+		document
+			.getElementById("photoBoothBookingForm")
+			.addEventListener("submit", async function (e) {
+				e.preventDefault();
+
+				if (!token) {
+					window.location.href = "/login";
+					return;
+				}
+
+				const bookingDate = document.getElementById("bookingDate").value;
+				const startTime = document.getElementById("startTime").value;
+				const packageType = document.getElementById("packageType").value;
+				const duration = document.getElementById("duration").value;
+				const specialRequests =
+					document.getElementById("specialRequests").value;
+
+				// Calculate end time based on start time and duration
+				const [startHour, startMinute] = startTime.split(":");
+				const endHour = parseInt(startHour) + parseInt(duration);
+				const endTime = `${endHour.toString().padStart(2, "0")}:${startMinute}`;
+
+				try {
+					const response = await fetch("/api/bookings", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+						body: JSON.stringify({
+							bookingDate,
+							startTime,
+							endTime,
+							duration,
+							packageType,
+							specialRequests,
+						}),
+					});
+
+					const data = await response.json();
+
+					if (!response.ok) {
+						throw new Error(data.error || "Booking failed");
+					}
+
+					// Show success modal
+					const successModal = new bootstrap.Modal(
+						document.getElementById("bookingSuccessModal")
+					);
+					successModal.show();
+				} catch (error) {
+					const bookingError = document.getElementById("bookingError");
+					bookingError.textContent = error.message;
+					bookingError.style.display = "block";
+				}
+			});
+
+		// Helper functions
+		function fetchAvailableTimeSlots(date) {
+			const startTimeSelect = document.getElementById("startTime");
+			startTimeSelect.innerHTML =
+				'<option value="">Loading available times...</option>';
+			startTimeSelect.disabled = true;
+
+			fetch(`/api/bookings/availability/${date}`, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			})
+				.then((response) => response.json())
+				.then((timeSlots) => {
+					startTimeSelect.innerHTML = '<option value="">Select a time</option>';
+
+					timeSlots.forEach((slot) => {
+						if (slot.available) {
+							const option = document.createElement("option");
+							option.value = slot.startTime;
+							option.textContent = `${slot.startTime} - ${slot.endTime}`;
+							startTimeSelect.appendChild(option);
+						}
+					});
+
+					startTimeSelect.disabled = false;
+				})
+				.catch((error) => {
+					console.error("Error fetching time slots:", error);
+					startTimeSelect.innerHTML =
+						'<option value="">Error loading times</option>';
+				});
+		}
+
+		function updateDuration() {
+			const packageType = document.getElementById("packageType").value;
+			const durationSelect = document.getElementById("duration");
+
+			durationSelect.innerHTML = '<option value="">Select duration</option>';
+
+			if (packageType) {
+				let defaultDuration;
+
+				switch (packageType) {
+					case "Basic":
+						defaultDuration = 1;
+						break;
+					case "Standard":
+						defaultDuration = 2;
+						break;
+					case "Premium":
+						defaultDuration = 3;
+						break;
+				}
+
+				const option = document.createElement("option");
+				option.value = defaultDuration;
+				option.textContent = `${defaultDuration} hour${
+					defaultDuration > 1 ? "s" : ""
+				}`;
+				durationSelect.appendChild(option);
+
+				durationSelect.value = defaultDuration;
+				durationSelect.disabled = true;
+			} else {
+				durationSelect.disabled = true;
+			}
+		}
+
+		function updateSummary() {
+			const date = document.getElementById("bookingDate").value;
+			const startTime = document.getElementById("startTime").value;
+			const packageType = document.getElementById("packageType").value;
+			const duration = document.getElementById("duration").value;
+
+			// Update summary fields
+			document.getElementById("summaryDate").textContent = date
+				? new Date(date).toLocaleDateString()
+				: "-";
+			document.getElementById("summaryTime").textContent = startTime
+				? startTime
+				: "-";
+			document.getElementById("summaryPackage").textContent =
+				packageType || "-";
+			document.getElementById("summaryDuration").textContent = duration
+				? `${duration} hour${duration > 1 ? "s" : ""}`
+				: "-";
+
+			// Update price
+			let price = 0;
+			if (packageType === "Basic") price = 199;
+			else if (packageType === "Standard") price = 299;
+			else if (packageType === "Premium") price = 399;
+
+			document.getElementById("summaryPrice").textContent = `$${price}`;
+		}
+
+		// Initialize if URL has parameters
+		if (urlParams.has("date")) {
+			fetchAvailableTimeSlots(urlParams.get("date"));
+		}
+		updateSummary();
+	});
+</script>
+`) %>

@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	html {
+		font-family: "Circular", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+	}
+
+	body {
+		@apply bg-gray-50 text-gray-900;
+	}
+}
+
+@layer components {
+	.btn {
+		@apply px-4 py-2 rounded-lg font-medium transition-transform duration-200 hover:-translate-y-0.5;
+	}
+
+	.btn-primary {
+		@apply bg-primary text-white hover:bg-opacity-90;
+	}
+
+	.btn-outline {
+		@apply border-2 border-primary text-primary hover:bg-primary hover:text-white;
+	}
+
+	.container-custom {
+		@apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+	}
+}

@@ -1,0 +1,369 @@
+<% // Define script variable for layout var script = `
+<script>
+	// Form submission
+	document.addEventListener("DOMContentLoaded", function () {
+		const searchForm = document.querySelector(".booking-search-form");
+
+		searchForm.addEventListener("submit", function (e) {
+			e.preventDefault();
+
+			const date = document.getElementById("bookingDate").value;
+			const packageType = document.getElementById("packageType").value;
+			const duration = document.getElementById("duration").value;
+
+			let queryParams = [];
+			if (date) queryParams.push(`date=${date}`);
+			if (packageType) queryParams.push(`package=${packageType}`);
+			if (duration) queryParams.push(`duration=${duration}`);
+
+			const queryString =
+				queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+			window.location.href = `/booking${queryString}`;
+		});
+	});
+</script>
+`; %>
+
+<!-- Hero Section -->
+<section class="hero-section position-relative">
+	<div
+		class="hero-image"
+		style="
+			background-image: url('/image/logo.png');
+			height: 600px;
+			background-size: cover;
+			background-position: center;
+		">
+		<div
+			class="overlay position-absolute w-100 h-100"
+			style="background: rgba(0, 0, 0, 0.4)"></div>
+		<div class="container h-100 position-relative">
+			<div class="row h-100 align-items-center">
+				<div class="col-md-8 text-white">
+					<h1 class="display-4 fw-bold">Capture Moments, Create Memories</h1>
+					<p class="lead">
+						Book your premium photo booth experience with MJ Studios
+					</p>
+					<a href="/booking" class="btn btn-primary btn-lg mt-3">Book Now</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Search Section (Airbnb-like) -->
+<section
+	class="search-section py-4 bg-white shadow-sm sticky-top"
+	style="top: 72px; z-index: 99">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<form action="/booking" class="booking-search-form">
+					<div class="row g-3 align-items-center">
+						<div class="col-md-4">
+							<div class="form-floating">
+								<input
+									type="date"
+									class="form-control"
+									id="bookingDate"
+									name="date"
+									min="<%= new Date().toISOString().split('T')[0] %>" />
+								<label for="bookingDate">Select Date</label>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-floating">
+								<select class="form-select" id="packageType" name="packageType">
+									<option value="">Any Package</option>
+									<option value="Basic">Basic</option>
+									<option value="Standard">Standard</option>
+									<option value="Premium">Premium</option>
+								</select>
+								<label for="packageType">Package Type</label>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-floating">
+								<select class="form-select" id="duration" name="duration">
+									<option value="">Any Duration</option>
+									<option value="1">1 Hour</option>
+									<option value="2">2 Hours</option>
+									<option value="3">3 Hours</option>
+								</select>
+								<label for="duration">Duration</label>
+							</div>
+						</div>
+						<div class="col-md-2">
+							<button type="submit" class="btn btn-primary w-100 h-100">
+								Search
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Packages Section -->
+<section class="packages-section py-5">
+	<div class="container">
+		<h2 class="text-center mb-5">Our Photo Booth Packages</h2>
+		<div class="row" id="packages-container">
+			<!-- Packages will be loaded dynamically -->
+			<div class="col-md-4 mb-4">
+				<div class="card h-100 shadow-sm hover-shadow">
+					<div class="card-body">
+						<h3 class="card-title">Basic Package</h3>
+						<div class="price-badge">$199</div>
+						<p class="card-text">Standard photo booth experience for 1 hour</p>
+						<ul class="list-unstyled">
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Unlimited photos
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Basic props
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Digital copies
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Online gallery
+							</li>
+						</ul>
+					</div>
+					<div class="card-footer bg-white border-0">
+						<a
+							href="/booking?package=Basic"
+							class="btn btn-outline-primary w-100"
+							>Book This Package</a
+						>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-4 mb-4">
+				<div class="card h-100 shadow-sm hover-shadow">
+					<div class="card-body">
+						<h3 class="card-title">Standard Package</h3>
+						<div class="price-badge">$299</div>
+						<p class="card-text">Enhanced photo booth experience for 2 hours</p>
+						<ul class="list-unstyled">
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Unlimited photos
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Premium props
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Digital copies
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Online gallery
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Custom backdrop
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Social media
+								sharing
+							</li>
+						</ul>
+					</div>
+					<div class="card-footer bg-white border-0">
+						<a
+							href="/booking?package=Standard"
+							class="btn btn-outline-primary w-100"
+							>Book This Package</a
+						>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-4 mb-4">
+				<div class="card h-100 shadow-sm hover-shadow">
+					<div class="card-body">
+						<h3 class="card-title">Premium Package</h3>
+						<div class="price-badge">$399</div>
+						<p class="card-text">Ultimate photo booth experience for 3 hours</p>
+						<ul class="list-unstyled">
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Unlimited photos
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Premium props
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Digital copies
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Online gallery
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Custom backdrop
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Social media
+								sharing
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Photo album
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> On-site attendant
+							</li>
+							<li>
+								<i class="fas fa-check text-success me-2"></i> Video messages
+							</li>
+						</ul>
+					</div>
+					<div class="card-footer bg-white border-0">
+						<a
+							href="/booking?package=Premium"
+							class="btn btn-outline-primary w-100"
+							>Book This Package</a
+						>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5 bg-light">
+	<div class="container">
+		<h2 class="text-center mb-5">Why Choose Our Photo Booth</h2>
+		<div class="row">
+			<div class="col-md-4 mb-4">
+				<div class="feature-card text-center p-4">
+					<div class="feature-icon mb-3">
+						<i class="fas fa-camera fa-3x text-primary"></i>
+					</div>
+					<h4>High-Quality Photos</h4>
+					<p>
+						Professional DSLR cameras and lighting for stunning, high-resolution
+						photos every time.
+					</p>
+				</div>
+			</div>
+			<div class="col-md-4 mb-4">
+				<div class="feature-card text-center p-4">
+					<div class="feature-icon mb-3">
+						<i class="fas fa-share-alt fa-3x text-primary"></i>
+					</div>
+					<h4>Instant Sharing</h4>
+					<p>
+						Share your photos instantly to social media or via email directly
+						from our booth.
+					</p>
+				</div>
+			</div>
+			<div class="col-md-4 mb-4">
+				<div class="feature-card text-center p-4">
+					<div class="feature-icon mb-3">
+						<i class="fas fa-paint-brush fa-3x text-primary"></i>
+					</div>
+					<h4>Customizable Experience</h4>
+					<p>
+						Choose from various backdrops, props, and digital overlays to match
+						your event theme.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section py-5">
+	<div class="container">
+		<h2 class="text-center mb-5">What Our Clients Say</h2>
+		<div class="row">
+			<div class="col-md-4 mb-4">
+				<div class="card h-100 shadow-sm">
+					<div class="card-body">
+						<div class="d-flex align-items-center mb-3">
+							<img
+								src="https://randomuser.me/api/portraits/women/32.jpg"
+								alt="Client"
+								class="rounded-circle me-3"
+								width="60" />
+							<div>
+								<h5 class="mb-0">Sarah Johnson</h5>
+								<div class="text-warning">
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+								</div>
+							</div>
+						</div>
+						<p class="card-text">
+							"The photo booth was the highlight of our wedding! Our guests
+							couldn't get enough of it, and the photos are amazing quality.
+							Highly recommend!"
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4 mb-4">
+				<div class="card h-100 shadow-sm">
+					<div class="card-body">
+						<div class="d-flex align-items-center mb-3">
+							<img
+								src="https://randomuser.me/api/portraits/men/47.jpg"
+								alt="Client"
+								class="rounded-circle me-3"
+								width="60" />
+							<div>
+								<h5 class="mb-0">Michael Rodriguez</h5>
+								<div class="text-warning">
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+								</div>
+							</div>
+						</div>
+						<p class="card-text">
+							"We hired MJ Studios for our corporate event and it was a huge
+							success. Professional service, great props, and everyone loved the
+							instant prints."
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4 mb-4">
+				<div class="card h-100 shadow-sm">
+					<div class="card-body">
+						<div class="d-flex align-items-center mb-3">
+							<img
+								src="https://randomuser.me/api/portraits/women/65.jpg"
+								alt="Client"
+								class="rounded-circle me-3"
+								width="60" />
+							<div>
+								<h5 class="mb-0">Emily Chen</h5>
+								<div class="text-warning">
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+									<i class="fas fa-star"></i>
+								</div>
+							</div>
+						</div>
+						<p class="card-text">
+							"The team at MJ Studios was fantastic! They were punctual,
+							friendly, and made sure everyone had a great time. The photo
+							quality exceeded our expectations!"
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

@@ -1,0 +1,146 @@
+.hero {
+	background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+		url("../assets/hero-bg.jpg");
+	background-size: cover;
+	background-position: center;
+	height: 500px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	text-align: center;
+	margin-bottom: 40px;
+}
+
+.hero-content {
+	max-width: 800px;
+	padding: 0 20px;
+}
+
+.hero h1 {
+	font-size: 3rem;
+	margin-bottom: 20px;
+}
+
+.hero p {
+	font-size: 1.2rem;
+	margin-bottom: 30px;
+}
+
+.about,
+.packages,
+.testimonials {
+	padding: 60px 0;
+}
+
+.about h2,
+.packages h2,
+.testimonials h2 {
+	text-align: center;
+	margin-bottom: 40px;
+	font-size: 2rem;
+}
+
+.about p {
+	line-height: 1.6;
+	font-size: 1.1rem;
+	text-align: center;
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.package-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 30px;
+	margin-top: 40px;
+}
+
+.package-card {
+	background-color: white;
+	border-radius: 8px;
+	padding: 30px;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+	text-align: center;
+	transition: transform 0.3s ease;
+}
+
+.package-card:hover {
+	transform: translateY(-10px);
+}
+
+.package-card h3 {
+	font-size: 1.5rem;
+	margin-bottom: 15px;
+	color: #333;
+}
+
+.package-card .price {
+	font-size: 2rem;
+	font-weight: bold;
+	color: #f8c630;
+	margin-bottom: 10px;
+}
+
+.package-card .duration {
+	color: #666;
+	margin-bottom: 20px;
+}
+
+.package-card .features {
+	list-style: none;
+	margin-bottom: 25px;
+}
+
+.package-card .features li {
+	padding: 8px 0;
+	border-bottom: 1px solid #eee;
+}
+
+.package-card .features li:last-child {
+	border-bottom: none;
+}
+
+.testimonial-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 30px;
+}
+
+.testimonial {
+	background-color: white;
+	padding: 25px;
+	border-radius: 8px;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial p {
+	font-style: italic;
+	margin-bottom: 15px;
+	line-height: 1.6;
+}
+
+.testimonial span {
+	font-weight: bold;
+	color: #666;
+}
+
+@media screen and (max-width: 768px) {
+	.hero {
+		height: 400px;
+	}
+
+	.hero h1 {
+		font-size: 2.2rem;
+	}
+
+	.hero p {
+		font-size: 1rem;
+	}
+
+	.about,
+	.packages,
+	.testimonials {
+		padding: 40px 0;
+	}
+}

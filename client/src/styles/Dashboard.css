@@ -1,0 +1,134 @@
+.dashboard {
+	padding: 20px 0;
+}
+
+.dashboard-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+	font-size: 2rem;
+	color: #333;
+}
+
+.loading {
+	text-align: center;
+	padding: 40px;
+	font-size: 1.2rem;
+	color: #666;
+}
+
+.error-message {
+	background-color: #ffecec;
+	color: #d63031;
+	padding: 12px;
+	border-radius: 4px;
+	margin-bottom: 20px;
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+.no-bookings {
+	text-align: center;
+	padding: 60px 20px;
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.no-bookings p {
+	margin-bottom: 20px;
+	font-size: 1.1rem;
+	color: #666;
+}
+
+.bookings-list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 20px;
+}
+
+.booking-card {
+	background-color: #fff;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.booking-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid #eee;
+}
+
+.booking-header h3 {
+	font-size: 1.3rem;
+	color: #333;
+}
+
+.status {
+	padding: 6px 12px;
+	border-radius: 20px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.status-confirmed {
+	background-color: #e3f9e5;
+	color: #27ae60;
+}
+
+.status-pending {
+	background-color: #fff8e1;
+	color: #f39c12;
+}
+
+.status-cancelled {
+	background-color: #ffecec;
+	color: #d63031;
+}
+
+.booking-details {
+	margin-bottom: 20px;
+}
+
+.booking-details p {
+	margin-bottom: 8px;
+	font-size: 1rem;
+}
+
+.booking-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.btn-cancel {
+	border-color: #d63031;
+	color: #d63031;
+}
+
+.btn-cancel:hover {
+	background-color: #d63031;
+	color: #fff;
+}
+
+@media screen and (min-width: 768px) {
+	.bookings-list {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media screen and (max-width: 576px) {
+	.dashboard-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 15px;
+	}
+}
