@@ -20,7 +20,7 @@ const sendBookingConfirmation = (booking, user) => {
         <li>Time: ${booking.startTime} - ${booking.endTime}</li>
         <li>Package: ${booking.packageType}</li>
         <li>Duration: ${booking.duration} hour(s)</li>
-        <li>Total Price: $${booking.totalPrice}</li>
+        <li>Total Price: ₱${booking.totalPrice}</li>
       </ul>
       <p>If you need to make any changes to your booking, please contact us.</p>
       <p>We look forward to seeing you!</p>
@@ -45,7 +45,7 @@ const sendBookingReminder = (booking, user) => {
         <li>Time: ${booking.startTime} - ${booking.endTime}</li>
         <li>Package: ${booking.packageType}</li>
       </ul>
-      <p>Our address: MJ Studios, 123 Photo Street, Photography City</p>
+      <p>Our address: MJ Studios, Charles M.B Building, Calao East, City of Santiago, Isabela 3311</p>
       <p>We look forward to seeing you!</p>
       <p>Best regards,<br>MJ Studios Team</p>
     `,

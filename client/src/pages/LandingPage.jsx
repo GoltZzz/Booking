@@ -37,7 +37,7 @@ const LandingPage = () => {
 		{
 			id: 1,
 			title: "Birthday Photoshoot",
-			location: "MJ Studios, New York",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.9,
 			reviewCount: 124,
 			price: 150,
@@ -46,7 +46,7 @@ const LandingPage = () => {
 		{
 			id: 2,
 			title: "Wedding Pre-nup Photography",
-			location: "MJ Studios, New York",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.8,
 			reviewCount: 98,
 			price: 175,
@@ -55,7 +55,7 @@ const LandingPage = () => {
 		{
 			id: 3,
 			title: "Debut Photoshoot",
-			location: "MJ Studios, California",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.95,
 			reviewCount: 156,
 			price: 180,
@@ -64,7 +64,7 @@ const LandingPage = () => {
 		{
 			id: 4,
 			title: "Maternity Photoshoot",
-			location: "MJ Studios, Illinois",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.85,
 			reviewCount: 112,
 			price: 160,
@@ -268,7 +268,7 @@ const LandingPage = () => {
 									</div>
 									<div className="text-sm text-gray-400 mb-3">
 										<span className="text-[#bb86fc] font-bold">
-											${listing.price}
+											₱{listing.price}
 										</span>{" "}
 										/ session
 									</div>
@@ -423,6 +423,13 @@ const LandingPage = () => {
 							<p className="text-gray-400">
 								Find and book the perfect photography space for your next shoot.
 							</p>
+							<div className="mt-4">
+								<p className="text-gray-400">Charles M.B Building</p>
+								<p className="text-gray-400">Calao East, City of Santiago</p>
+								<p className="text-gray-400">Isabela 3311</p>
+								<p className="text-gray-400">Phone: 0939 808 9460</p>
+								<p className="text-gray-400">Email: mjtuazon08@gmail.com</p>
+							</div>
 						</div>
 
 						<div>

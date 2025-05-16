@@ -125,7 +125,7 @@ const Booking = () => {
 								}`}
 								onClick={() => handlePackageSelect(pkg)}>
 								<h3>{pkg.name}</h3>
-								<p className="price">${pkg.price}</p>
+								<p className="price">₱{pkg.price}</p>
 								<p className="duration">{pkg.duration} hours</p>
 								<ul className="features">
 									{pkg.features.map((feature, index) => (
@@ -230,7 +230,7 @@ const Booking = () => {
 							</p>
 							<p>
 								<strong>Total:</strong>{" "}
-								{selectedPackage ? `$${selectedPackage.price}` : "$0"}
+								{selectedPackage ? `₱${selectedPackage.price}` : "₱0"}
 							</p>
 						</div>
 
