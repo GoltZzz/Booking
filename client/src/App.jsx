@@ -17,29 +17,22 @@ function App() {
 	return (
 		<Router>
 			<AuthProvider>
-				<div className="app">
-					<main className="main-content">
-						<Routes>
-							<Route path="/" element={<LandingPage />} />
-							<Route path="/home" element={<Home />} />
-							<Route path="/login" element={<Login />} />
-							<Route path="/register" element={<Register />} />
-							<Route path="/dashboard" element={<Dashboard />} />
-							<Route path="/booking" element={<Booking />} />
-							<Route
-								path="/auth/google/success"
-								element={<GoogleAuthSuccess />}
-							/>
+				<Routes>
+					<Route path="/" element={<LandingPage />} />
+					<Route path="/home" element={<Home />} />
+					<Route path="/login" element={<Login />} />
+					<Route path="/register" element={<Register />} />
+					<Route path="/dashboard" element={<Dashboard />} />
+					<Route path="/booking" element={<Booking />} />
+					<Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
 
-							{/* Admin Routes */}
-							<Route path="/admin" element={<AdminRoute />}>
-								<Route index element={<AdminDashboard />} />
-								<Route path="users" element={<UserManagement />} />
-								<Route path="bookings" element={<BookingManagement />} />
-							</Route>
-						</Routes>
-					</main>
-				</div>
+					{/* Admin Routes */}
+					<Route path="/admin" element={<AdminRoute />}>
+						<Route index element={<AdminDashboard />} />
+						<Route path="users" element={<UserManagement />} />
+						<Route path="bookings" element={<BookingManagement />} />
+					</Route>
+				</Routes>
 			</AuthProvider>
 		</Router>
 	);

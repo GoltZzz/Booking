@@ -3,7 +3,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-height: calc(100vh - 160px);
+	min-height: 100vh;
 	padding: 40px 20px;
 	background: linear-gradient(135deg, #6e8efb, #a777e3);
 	position: relative;
