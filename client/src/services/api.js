@@ -5,6 +5,7 @@ const api = axios.create({
 	headers: {
 		"Content-Type": "application/json",
 	},
+	withCredentials: true, // Enable sending cookies with requests
 });
 
 // Add a request interceptor to include the auth token in requests
@@ -25,7 +26,9 @@ api.interceptors.request.use(
 export const userApi = {
 	login: (credentials) => api.post("/users/login", credentials),
 	register: (userData) => api.post("/users/register", userData),
+	logout: () => api.post("/users/logout"),
 	getProfile: () => api.get("/users/profile"),
+	checkAuth: () => api.get("/users/check-auth"),
 };
 
 // Booking related API calls
@@ -41,6 +44,25 @@ export const bookingApi = {
 export const packageApi = {
 	getPackages: () => api.get("/packages"),
 	getPackage: (id) => api.get(`/packages/${id}`),
+};
+
+// Admin related API calls
+export const adminApi = {
+	// Dashboard statistics
+	getStats: () => api.get("/admin/stats"),
+
+	// User management
+	getUsers: () => api.get("/admin/users"),
+	getUser: (id) => api.get(`/admin/users/${id}`),
+	updateUser: (id, userData) => api.patch(`/admin/users/${id}`, userData),
+	deleteUser: (id) => api.delete(`/admin/users/${id}`),
+
+	// Booking management
+	getAllBookings: () => api.get("/admin/bookings"),
+	getBookingDetails: (id) => api.get(`/admin/bookings/${id}`),
+	updateBookingDetails: (id, bookingData) =>
+		api.patch(`/admin/bookings/${id}`, bookingData),
+	deleteBooking: (id) => api.delete(`/admin/bookings/${id}`),
 };
 
 export default api;

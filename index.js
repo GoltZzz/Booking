@@ -2,12 +2,17 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const session = require("express-session");
+const passport = require("passport");
+const helmet = require("helmet");
+const crypto = require("crypto");
 require("dotenv").config();
 
 // Import routes
 const userRoutes = require("./routes/userRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const packageRoutes = require("./routes/packageRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 // Import controllers
 const packageController = require("./controller/packageController");
@@ -17,14 +22,80 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(
+	cors({
+		origin:
+			process.env.NODE_ENV === "production" ? false : "http://localhost:5173",
+		credentials: true,
+	})
+);
+
+// Generate CSP nonce for each request
+app.use((req, res, next) => {
+	res.locals.cspNonce = crypto.randomBytes(16).toString("hex");
+	next();
+});
+
+// Helmet security middleware
+app.use(
+	helmet({
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				scriptSrc: [
+					"'self'",
+					"https://cdnjs.cloudflare.com",
+					"https://accounts.google.com",
+					"https://apis.google.com",
+					"https://ssl.gstatic.com",
+					"https://www.gstatic.com",
+					(req, res) => `'nonce-${res.locals.cspNonce}'`,
+				],
+				styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+				imgSrc: ["'self'", "data:", "https:"],
+				fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+				connectSrc: [
+					"'self'",
+					"https://accounts.google.com",
+					"https://www.googleapis.com",
+				],
+				frameSrc: ["'self'", "https://accounts.google.com"],
+			},
+		},
+		crossOriginOpenerPolicy: {
+			policy: "same-origin-allow-popups",
+		},
+	})
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session configuration
+app.use(
+	session({
+		secret: process.env.SESSION_SECRET || "your-session-secret",
+		resave: false,
+		saveUninitialized: false,
+		cookie: {
+			secure: process.env.NODE_ENV === "production",
+			maxAge: 24 * 60 * 60 * 1000, // 24 hours
+		},
+	})
+);
+
+// Initialize Passport and restore authentication state from session
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Import Passport config
+require("./config/passport");
 
 // API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/packages", packageRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Serve React frontend in production
 if (process.env.NODE_ENV === "production") {

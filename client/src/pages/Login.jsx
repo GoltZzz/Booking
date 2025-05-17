@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { userApi } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import googleLogo from "../assets/images/google-logo.png";
 import "../styles/Auth.css";
 
 const Login = () => {
@@ -9,7 +10,7 @@ const Login = () => {
 		password: "",
 	});
 	const [error, setError] = useState("");
-	const [loading, setLoading] = useState(false);
+	const { login, googleLogin, loading } = useAuth();
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -23,19 +24,18 @@ const Login = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError("");
-		setLoading(true);
 
-		try {
-			const response = await userApi.login(formData);
-			localStorage.setItem("token", response.data.token);
+		const result = await login(formData);
+
+		if (result.success) {
 			navigate("/dashboard");
-		} catch (err) {
-			setError(
-				err.response?.data?.message || "Login failed. Please try again."
-			);
-		} finally {
-			setLoading(false);
+		} else {
+			setError(result.error);
 		}
+	};
+
+	const handleGoogleLogin = () => {
+		googleLogin();
 	};
 
 	return (
@@ -74,6 +74,18 @@ const Login = () => {
 						{loading ? "Logging in..." : "Login"}
 					</button>
 				</form>
+
+				<div className="auth-divider">
+					<span>OR</span>
+				</div>
+
+				<button
+					onClick={handleGoogleLogin}
+					className="btn google-btn"
+					type="button">
+					<img src={googleLogo} alt="Google logo" className="google-icon" />
+					Sign in with Google
+				</button>
 
 				<div className="auth-links">
 					<p>

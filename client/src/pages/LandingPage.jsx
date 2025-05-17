@@ -12,6 +12,9 @@ import BirthdayImage from "../assets/images/birthday.jpg";
 import WeddingImage from "../assets/images/wedding pre-nup.jpg";
 import DebutImage from "../assets/images/debut.jpg";
 import MaternityImage from "../assets/images/maternity.jpg";
+import SignupModal from "../components/SignupModal";
+import LoginModal from "../components/LoginModal";
+import { useAuth } from "../context/AuthContext";
 
 const LandingPage = () => {
 	const [searchData, setSearchData] = useState({
@@ -19,6 +22,9 @@ const LandingPage = () => {
 		date: "",
 		service: "",
 	});
+	const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+	const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+	const { isAuthenticated } = useAuth();
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -31,6 +37,24 @@ const LandingPage = () => {
 	const handleSearch = (e) => {
 		e.preventDefault();
 		console.log("Search data:", searchData);
+	};
+
+	const openSignupModal = () => {
+		setIsSignupModalOpen(true);
+		setIsLoginModalOpen(false);
+	};
+
+	const closeSignupModal = () => {
+		setIsSignupModalOpen(false);
+	};
+
+	const openLoginModal = () => {
+		setIsLoginModalOpen(true);
+		setIsSignupModalOpen(false);
+	};
+
+	const closeLoginModal = () => {
+		setIsLoginModalOpen(false);
 	};
 
 	const featuredListings = [
@@ -124,16 +148,16 @@ const LandingPage = () => {
 							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
 							How it works
 						</Link>
-						<Link
-							to="/login"
+						<button
+							onClick={openLoginModal}
 							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
 							Sign in
-						</Link>
-						<Link
-							to="/register"
+						</button>
+						<button
+							onClick={openSignupModal}
 							className="bg-[#bb86fc] text-[#121212] px-4 py-2 rounded-md hover:bg-[#a06cd5] transition-colors">
 							Sign up
-						</Link>
+						</button>
 					</nav>
 
 					<button className="md:hidden text-gray-300">
@@ -400,11 +424,19 @@ const LandingPage = () => {
 						Join thousands of photographers and clients who trust MJ Studios for
 						their photography needs
 					</p>
-					<Link
-						to="/register"
-						className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
-						Get Started Today
-					</Link>
+					{isAuthenticated ? (
+						<Link
+							to="/booking"
+							className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
+							Book a Session Now
+						</Link>
+					) : (
+						<button
+							onClick={openSignupModal}
+							className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
+							Get Started Today
+						</button>
+					)}
 				</div>
 			</section>
 
@@ -582,6 +614,9 @@ const LandingPage = () => {
 					</div>
 				</div>
 			</footer>
+
+			<SignupModal isOpen={isSignupModalOpen} onClose={closeSignupModal} />
+			<LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
 		</div>
 	);
 };

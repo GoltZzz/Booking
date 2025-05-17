@@ -60,6 +60,22 @@
 	color: #1a1a1a;
 }
 
+.admin-link {
+	background-color: #bb86fc;
+	color: #121212;
+	border-radius: 4px;
+	font-weight: 500;
+	padding: 8px 16px;
+	transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+	background-color: #9d4edd;
+	color: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 @media screen and (max-width: 768px) {
 	.navbar-container {
 		padding: 0 16px;

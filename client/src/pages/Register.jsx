@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { userApi } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Auth.css";
+import googleLogo from "../assets/images/google-logo.png";
 
 const Register = () => {
 	const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ const Register = () => {
 		phone: "",
 	});
 	const [error, setError] = useState("");
-	const [loading, setLoading] = useState(false);
+	const { register, googleLogin, loading } = useAuth();
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -33,21 +34,25 @@ const Register = () => {
 			return;
 		}
 
-		setLoading(true);
+		// Create a new object with only the fields needed for registration
+		const registerData = {
+			name: formData.name,
+			email: formData.email,
+			password: formData.password,
+			phone: formData.phone,
+		};
 
-		try {
-			const { confirmPassword, ...registerData } = formData;
+		const result = await register(registerData);
 
-			const response = await userApi.register(registerData);
-			localStorage.setItem("token", response.data.token);
+		if (result.success) {
 			navigate("/dashboard");
-		} catch (err) {
-			setError(
-				err.response?.data?.message || "Registration failed. Please try again."
-			);
-		} finally {
-			setLoading(false);
+		} else {
+			setError(result.error);
 		}
+	};
+
+	const handleGoogleSignup = () => {
+		googleLogin();
 	};
 
 	return (
@@ -124,6 +129,18 @@ const Register = () => {
 						{loading ? "Registering..." : "Register"}
 					</button>
 				</form>
+
+				<div className="auth-divider">
+					<span>OR</span>
+				</div>
+
+				<button
+					onClick={handleGoogleSignup}
+					className="btn google-btn"
+					type="button">
+					<img src={googleLogo} alt="Google logo" className="google-icon" />
+					Sign up with Google
+				</button>
 
 				<div className="auth-links">
 					<p>
