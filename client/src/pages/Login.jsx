@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import googleLogo from "../assets/images/google-logo.png";
+import FormInput from "../components/FormInput";
+import Button from "../components/Button";
+import ErrorMessage from "../components/ErrorMessage";
 import "../styles/Auth.css";
 
 const Login = () => {
@@ -9,8 +13,9 @@ const Login = () => {
 		email: "",
 		password: "",
 	});
-	const [error, setError] = useState("");
+	const [errors, setErrors] = useState({});
 	const { login, googleLogin, loading } = useAuth();
+	const toast = useToast();
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -19,18 +24,53 @@ const Login = () => {
 			...prevState,
 			[name]: value,
 		}));
+
+		// Clear error when user starts typing
+		if (errors[name]) {
+			setErrors((prev) => ({
+				...prev,
+				[name]: null,
+			}));
+		}
+	};
+
+	const validateForm = () => {
+		const newErrors = {};
+
+		// Email validation
+		if (!formData.email) {
+			newErrors.email = "Email is required";
+		} else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+			newErrors.email = "Email is invalid";
+		}
+
+		// Password validation
+		if (!formData.password) {
+			newErrors.password = "Password is required";
+		}
+
+		setErrors(newErrors);
+		return Object.keys(newErrors).length === 0;
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setError("");
 
-		const result = await login(formData);
+		if (!validateForm()) return;
 
-		if (result.success) {
-			navigate("/");
-		} else {
-			setError(result.error);
+		try {
+			const result = await login(formData);
+
+			if (result.success) {
+				toast.success("Login successful!");
+				navigate("/");
+			} else {
+				toast.error(result.error || "Login failed. Please try again.");
+				setErrors({ general: result.error });
+			}
+		} catch {
+			toast.error("An unexpected error occurred. Please try again.");
+			setErrors({ general: "An unexpected error occurred" });
 		}
 	};
 
@@ -41,55 +81,80 @@ const Login = () => {
 	return (
 		<div className="auth-container">
 			<div className="auth-form-container">
-				<h2>Login to Your Account</h2>
+				<h1 className="text-center text-2xl font-bold mb-6">
+					Login to Your Account
+				</h1>
 
-				{error && <div className="error-message">{error}</div>}
+				{errors.general && (
+					<ErrorMessage
+						message={errors.general}
+						type="error"
+						className="mb-4"
+					/>
+				)}
 
-				<form onSubmit={handleSubmit} className="auth-form">
-					<div className="form-group">
-						<label htmlFor="email">Email</label>
-						<input
-							type="email"
-							id="email"
-							name="email"
-							value={formData.email}
-							onChange={handleChange}
-							required
-						/>
-					</div>
+				<form
+					onSubmit={handleSubmit}
+					className="auth-form space-y-4"
+					noValidate>
+					<FormInput
+						id="email"
+						label="Email Address"
+						type="email"
+						name="email"
+						value={formData.email}
+						onChange={handleChange}
+						required
+						error={errors.email}
+						autoComplete="email"
+						disabled={loading}
+					/>
 
-					<div className="form-group">
-						<label htmlFor="password">Password</label>
-						<input
-							type="password"
-							id="password"
-							name="password"
-							value={formData.password}
-							onChange={handleChange}
-							required
-						/>
-					</div>
+					<FormInput
+						id="password"
+						label="Password"
+						type="password"
+						name="password"
+						value={formData.password}
+						onChange={handleChange}
+						required
+						error={errors.password}
+						autoComplete="current-password"
+						disabled={loading}
+					/>
 
-					<button type="submit" className="btn auth-btn" disabled={loading}>
+					<Button
+						type="submit"
+						fullWidth
+						loading={loading}
+						disabled={loading}
+						className="mt-6">
 						{loading ? "Logging in..." : "Login"}
-					</button>
+					</Button>
 				</form>
 
 				<div className="auth-divider">
 					<span>OR</span>
 				</div>
 
-				<button
+				<Button
 					onClick={handleGoogleLogin}
-					className="btn google-btn"
-					type="button">
-					<img src={googleLogo} alt="Google logo" className="google-icon" />
+					variant="outline"
+					fullWidth
+					disabled={loading}
+					icon={<img src={googleLogo} alt="" className="w-5 h-5" />}
+					className="google-btn">
 					Sign in with Google
-				</button>
+				</Button>
 
 				<div className="auth-links">
 					<p>
-						Don't have an account? <Link to="/register">Register</Link>
+						Don't have an account?{" "}
+						<Link
+							to="/register"
+							className="text-[#bb86fc] hover:text-[#a06cd5]">
+							Register
+						</Link>
 					</p>
 				</div>
 			</div>

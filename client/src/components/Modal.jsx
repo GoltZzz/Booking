@@ -3,11 +3,16 @@ import "../styles/Modal.css";
 
 const Modal = ({ isOpen, onClose, title, children }) => {
 	const modalRef = useRef(null);
+	const closeButtonRef = useRef(null);
 
 	// Prevent scrolling when modal is open
 	useEffect(() => {
 		if (isOpen) {
 			document.body.style.overflow = "hidden";
+			// Focus the close button when modal opens
+			setTimeout(() => {
+				closeButtonRef.current?.focus();
+			}, 100);
 		} else {
 			document.body.style.overflow = "auto";
 		}
@@ -50,14 +55,63 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 		};
 	}, [isOpen, onClose]);
 
+	// Handle tab trap inside modal
+	useEffect(() => {
+		const handleTabKey = (event) => {
+			if (!isOpen || !modalRef.current) return;
+
+			const focusableElements = modalRef.current.querySelectorAll(
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+			);
+
+			if (focusableElements.length === 0) return;
+
+			const firstElement = focusableElements[0];
+			const lastElement = focusableElements[focusableElements.length - 1];
+
+			// If shift+tab and focus is on first element, move to last element
+			if (
+				event.key === "Tab" &&
+				event.shiftKey &&
+				document.activeElement === firstElement
+			) {
+				event.preventDefault();
+				lastElement.focus();
+			}
+
+			// If tab and focus is on last element, move to first element
+			if (
+				event.key === "Tab" &&
+				!event.shiftKey &&
+				document.activeElement === lastElement
+			) {
+				event.preventDefault();
+				firstElement.focus();
+			}
+		};
+
+		document.addEventListener("keydown", handleTabKey);
+		return () => {
+			document.removeEventListener("keydown", handleTabKey);
+		};
+	}, [isOpen]);
+
 	if (!isOpen) return null;
 
 	return (
-		<div className="modal-overlay">
-			<div className="modal-content" ref={modalRef}>
+		<div
+			className="modal-overlay"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="modal-title">
+			<div className="modal-content" ref={modalRef} tabIndex="-1">
 				<div className="modal-header">
-					<h2>{title}</h2>
-					<button className="modal-close" onClick={onClose}>
+					<h2 id="modal-title">{title}</h2>
+					<button
+						className="modal-close"
+						onClick={onClose}
+						ref={closeButtonRef}
+						aria-label="Close modal">
 						&times;
 					</button>
 				</div>
