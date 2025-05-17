@@ -1,115 +1,131 @@
-# MJ Studios Photo Booth Booking System
+# Photo Booth Booking System
 
-A full-stack web application for booking photo booth services for events. This system allows users to browse packages, make bookings, and manage their reservations.
-
-## Project Structure
-
-The project is organized into two main parts:
-
-- **Backend**: Express.js API server with MongoDB database
-- **Frontend**: React application built with Vite
+A full-stack application for managing photo booth bookings for MJ Studios.
 
 ## Features
 
-- User authentication and registration
-- Browse photo booth packages
-- Book a photo booth for an event
-- View and manage bookings
-- Admin dashboard for managing bookings and packages
+- User authentication (local and Google OAuth)
+- Booking management
+- Package selection
+- Admin dashboard
+- Email notifications
 
 ## Tech Stack
 
 ### Backend
 
 - Node.js
-- Express.js
+- Express
 - MongoDB with Mongoose
-- JWT for authentication
-- Mailgun for email notifications
+- Passport.js for authentication
+- JWT for API authentication
+- Express Session for web authentication
 
 ### Frontend
 
 - React
-- React Router
-- Axios
 - Vite
+- Tailwind CSS
 
-## Getting Started
+## Documentation
+
+- [API Routes Documentation](ROUTES.md) - Details of all API endpoints
+- [Improvement Suggestions](IMPROVEMENTS.md) - Suggestions for enhancing the codebase
+- [Authentication System](AUTH_SYSTEM.md) - How sessions, cookies, and JWT work in the application
+
+## Setup Instructions
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- MongoDB (local or Atlas)
-- npm or yarn
+- Node.js (v16+)
+- MongoDB
+- Google OAuth credentials (for Google Sign-In)
+
+### Environment Variables
+
+Copy the `.env.example` file to `.env` and fill in the required values:
+
+```
+# Server
+PORT=3000
+NODE_ENV=development
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/photo-booth-booking
+
+# JWT
+JWT_SECRET=your_jwt_secret_here
+JWT_EXPIRY=24h
+
+# Session
+SESSION_SECRET=your_session_secret_here
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+CLIENT_URL=http://localhost:5173
+
+# Email (Mailgun)
+MAILGUN_API_KEY=your_mailgun_api_key
+MAILGUN_DOMAIN=your_mailgun_domain
+EMAIL_FROM=no-reply@yourdomain.com
+```
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repository
 
-   ```
-   git clone <repository-url>
-   cd Booking
-   ```
+```
+git clone https://github.com/yourusername/photo-booth-booking.git
+cd photo-booth-booking
+```
 
-2. Install dependencies:
+2. Install backend dependencies
 
-   ```
-   npm install
-   cd client
-   npm install
-   cd ..
-   ```
+```
+npm install
+```
 
-3. Create a `.env` file in the root directory with the following variables:
+3. Install frontend dependencies
 
-   ```
-   PORT=3000
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   MAILGUN_API_KEY=your_mailgun_api_key
-   MAILGUN_DOMAIN=your_mailgun_domain
-   ```
+```
+cd client
+npm install
+cd ..
+```
 
-4. Start the development server:
+4. Start development servers
 
-   ```
-   npm run dev
-   ```
+```
+npm run dev
+```
 
-   This will start both the backend server and the React development server concurrently.
+This will start both the backend server and the frontend development server concurrently.
 
-## Development
+### Google OAuth Setup
 
-- Backend API runs on `http://localhost:3000`
-- Frontend development server runs on `http://localhost:5173`
-- API requests from the frontend are proxied to the backend
+For Google Sign-In functionality, follow the instructions in [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md).
 
-## Deployment
+## Production Deployment
 
-For production deployment:
+1. Build the frontend
 
-1. Build the frontend:
+```
+npm run build
+```
 
-   ```
-   npm run build
-   ```
+2. Set environment variables for production
 
-2. Set the NODE_ENV environment variable to 'production':
+```
+NODE_ENV=production
+```
 
-   ```
-   NODE_ENV=production
-   ```
+3. Start the server
 
-3. Start the server:
-   ```
-   npm start
-   ```
+```
+npm start
+```
 
-The Express server will serve the React frontend from the `client/dist` directory in production mode.
+## License
 
-## API Endpoints
-
-### Authentication
-
-- `POST /api/users/register` - Register a new user
-- `
+This project is licensed under the MIT License.

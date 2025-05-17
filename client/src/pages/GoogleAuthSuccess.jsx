@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { userApi } from "../services/api";
 import googleLogo from "../assets/images/google-logo.png";
 
 const GoogleAuthSuccess = () => {
-	const { getProfile } = useAuth();
+	const { setUser, setIsAuthenticated } = useAuth();
 	const [processingMessage, setProcessingMessage] = useState(
 		"Processing your login..."
 	);
@@ -12,36 +13,26 @@ const GoogleAuthSuccess = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		// Extract the token from URL in a CSP-compliant way
 		const processAuth = async () => {
 			try {
-				// Get the token from the URL query parameters
-				const params = new URLSearchParams(window.location.search);
-				const token = params.get("token");
+				// With HTTP-only cookies, we don't need to extract a token from URL
+				// Instead, we'll check auth status with the server
+				const response = await userApi.checkAuth();
 
-				if (token) {
-					// Store token in localStorage
-					localStorage.setItem("token", token);
+				if (response.data.isAuthenticated) {
+					// Update auth context with user data
+					setUser(response.data.user);
+					setIsAuthenticated(true);
 
 					setProcessingMessage("Authentication successful! Redirecting...");
 					setStatus("success");
 
-					// Get user profile to check admin status
-					const profileResult = await getProfile();
-
-					if (profileResult.success) {
-						// Always redirect to landing page regardless of admin status
-						setTimeout(() => {
-							navigate("/");
-						}, 2000);
-					} else {
-						// If we can't get the profile, redirect to home
-						setTimeout(() => {
-							navigate("/");
-						}, 2000);
-					}
+					// Redirect to home page
+					setTimeout(() => {
+						navigate("/");
+					}, 2000);
 				} else {
-					setProcessingMessage("Authentication failed. No token received.");
+					setProcessingMessage("Authentication failed. Please try again.");
 					setStatus("error");
 					setTimeout(() => {
 						navigate("/login");
@@ -58,7 +49,7 @@ const GoogleAuthSuccess = () => {
 		};
 
 		processAuth();
-	}, [navigate, getProfile]);
+	}, [navigate, setUser, setIsAuthenticated]);
 
 	return (
 		<div className="auth-container">

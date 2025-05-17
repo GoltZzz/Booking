@@ -12,8 +12,7 @@ import BirthdayImage from "../assets/images/birthday.jpg";
 import WeddingImage from "../assets/images/wedding pre-nup.jpg";
 import DebutImage from "../assets/images/debut.jpg";
 import MaternityImage from "../assets/images/maternity.jpg";
-import SignupModal from "../components/SignupModal";
-import LoginModal from "../components/LoginModal";
+import MainNavbar from "../components/MainNavbar";
 import { useAuth } from "../context/AuthContext";
 
 const LandingPage = () => {
@@ -22,8 +21,6 @@ const LandingPage = () => {
 		date: "",
 		service: "",
 	});
-	const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
-	const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 	const { isAuthenticated } = useAuth();
 
 	const handleInputChange = (e) => {
@@ -37,24 +34,6 @@ const LandingPage = () => {
 	const handleSearch = (e) => {
 		e.preventDefault();
 		console.log("Search data:", searchData);
-	};
-
-	const openSignupModal = () => {
-		setIsSignupModalOpen(true);
-		setIsLoginModalOpen(false);
-	};
-
-	const closeSignupModal = () => {
-		setIsSignupModalOpen(false);
-	};
-
-	const openLoginModal = () => {
-		setIsLoginModalOpen(true);
-		setIsSignupModalOpen(false);
-	};
-
-	const closeLoginModal = () => {
-		setIsLoginModalOpen(false);
 	};
 
 	const featuredListings = [
@@ -126,57 +105,7 @@ const LandingPage = () => {
 
 	return (
 		<div className="landing-page bg-[#121212]">
-			<header className="bg-[#1e1e1e] shadow-md sticky top-0 z-10">
-				<div className="container-custom py-3 flex justify-between items-center">
-					<Link to="/" className="flex items-center">
-						<img
-							src={LogoImage}
-							alt="MJ Studios Logo"
-							className="h-12 w-auto mr-3"
-						/>
-						<span className="text-xl font-bold text-[#e0e0e0]">MJ Studios</span>
-					</Link>
-
-					<nav className="hidden md:flex items-center space-x-6">
-						<Link
-							to="/explore"
-							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
-							Explore
-						</Link>
-						<Link
-							to="/how-it-works"
-							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
-							How it works
-						</Link>
-						<button
-							onClick={openLoginModal}
-							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
-							Sign in
-						</button>
-						<button
-							onClick={openSignupModal}
-							className="bg-[#bb86fc] text-[#121212] px-4 py-2 rounded-md hover:bg-[#a06cd5] transition-colors">
-							Sign up
-						</button>
-					</nav>
-
-					<button className="md:hidden text-gray-300">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="h-6 w-6"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M4 6h16M4 12h16M4 18h16"
-							/>
-						</svg>
-					</button>
-				</div>
-			</header>
+			<MainNavbar />
 
 			<section
 				className="relative h-[600px] bg-cover bg-center"
@@ -431,11 +360,11 @@ const LandingPage = () => {
 							Book a Session Now
 						</Link>
 					) : (
-						<button
-							onClick={openSignupModal}
+						<Link
+							to="/register"
 							className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
 							Get Started Today
-						</button>
+						</Link>
 					)}
 				</div>
 			</section>
@@ -614,9 +543,6 @@ const LandingPage = () => {
 					</div>
 				</div>
 			</footer>
-
-			<SignupModal isOpen={isSignupModalOpen} onClose={closeSignupModal} />
-			<LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
 		</div>
 	);
 };

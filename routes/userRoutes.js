@@ -10,6 +10,9 @@ router.post("/login", userController.login);
 router.post("/logout", userController.logout);
 router.get("/check-auth", userController.checkAuth);
 
+// Token refresh route
+router.post("/refresh", userController.refreshToken);
+
 // Google OAuth routes
 router.get(
 	"/auth/google",

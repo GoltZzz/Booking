@@ -1,7 +1,21 @@
 const User = require("../model/User");
-const jwt = require("jsonwebtoken");
+const tokenService = require("../utils/tokenService");
 const passport = require("passport");
 require("dotenv").config();
+
+// Cookie options
+const cookieOptions = {
+	httpOnly: true, // Prevent JavaScript access
+	secure: process.env.NODE_ENV === "production", // HTTPS only in production
+	sameSite: "strict", // Prevent CSRF
+	maxAge: 3600000, // 1 hour for access token
+};
+
+const refreshCookieOptions = {
+	...cookieOptions,
+	maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days for refresh token
+	path: "/api/users/refresh", // Only send to refresh endpoint
+};
 
 const register = async (req, res) => {
 	try {
@@ -27,12 +41,15 @@ const register = async (req, res) => {
 
 		await user.save();
 
-		// Generate JWT token
-		const token = jwt.sign(
-			{ userId: user._id, isAdmin: user.isAdmin },
-			process.env.JWT_SECRET || "your-fallback-secret",
-			{ expiresIn: "7d" }
-		);
+		// Generate tokens
+		const { token: accessToken, expiresAt: accessTokenExpiry } =
+			await tokenService.generateAccessToken(user);
+		const { token: refreshToken, expiresAt: refreshTokenExpiry } =
+			await tokenService.generateRefreshToken(user);
+
+		// Set tokens in HTTP-only cookies
+		res.cookie("accessToken", accessToken, cookieOptions);
+		res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
 		// Log the user in with Passport
 		req.login(user, (err) => {
@@ -50,7 +67,7 @@ const register = async (req, res) => {
 					profilePicture: user.profilePicture,
 					isAdmin: user.isAdmin,
 				},
-				token,
+				tokenExpiry: accessTokenExpiry,
 				isAuthenticated: true,
 			});
 		});
@@ -60,7 +77,7 @@ const register = async (req, res) => {
 };
 
 const login = (req, res, next) => {
-	passport.authenticate("local", (err, user, info) => {
+	passport.authenticate("local", async (err, user, info) => {
 		if (err) {
 			return next(err);
 		}
@@ -71,17 +88,20 @@ const login = (req, res, next) => {
 				.json({ error: info.message || "Invalid email or password" });
 		}
 
-		req.login(user, (err) => {
+		req.login(user, async (err) => {
 			if (err) {
 				return next(err);
 			}
 
-			// Generate JWT token for API authentication
-			const token = jwt.sign(
-				{ userId: user._id, isAdmin: user.isAdmin },
-				process.env.JWT_SECRET || "your-fallback-secret",
-				{ expiresIn: "7d" }
-			);
+			// Generate tokens
+			const { token: accessToken, expiresAt: accessTokenExpiry } =
+				await tokenService.generateAccessToken(user);
+			const { token: refreshToken, expiresAt: refreshTokenExpiry } =
+				await tokenService.generateRefreshToken(user);
+
+			// Set tokens in HTTP-only cookies
+			res.cookie("accessToken", accessToken, cookieOptions);
+			res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
 			return res.json({
 				message: "Login successful",
@@ -93,23 +113,22 @@ const login = (req, res, next) => {
 					profilePicture: user.profilePicture,
 					isAdmin: user.isAdmin,
 				},
-				token,
+				tokenExpiry: accessTokenExpiry,
 				isAuthenticated: true,
 			});
 		});
 	})(req, res, next);
 };
 
-const googleAuthCallback = (req, res) => {
+const googleAuthCallback = async (req, res) => {
 	// User has been authenticated and stored in req.user
 	const user = req.user;
 
-	// Generate JWT token for API authentication
-	const token = jwt.sign(
-		{ userId: user._id, isAdmin: user.isAdmin },
-		process.env.JWT_SECRET || "your-fallback-secret",
-		{ expiresIn: "7d" }
-	);
+	// Generate tokens
+	const { token: accessToken, expiresAt: accessTokenExpiry } =
+		await tokenService.generateAccessToken(user);
+	const { token: refreshToken, expiresAt: refreshTokenExpiry } =
+		await tokenService.generateRefreshToken(user);
 
 	// Get the client URL
 	const clientUrl =
@@ -117,18 +136,99 @@ const googleAuthCallback = (req, res) => {
 			? process.env.CLIENT_URL || "/"
 			: "http://localhost:5173";
 
-	// Redirect to frontend with token as a query parameter
-	// This avoids using hash fragments which can cause CSP issues
-	res.redirect(`${clientUrl}/auth/google/success?token=${token}`);
+	// Set tokens in HTTP-only cookies
+	// For local development, don't set domain (browser will use current domain)
+	// For production, set domain only if it's not a relative URL
+	const cookieSettingsAccess = { ...cookieOptions };
+	const cookieSettingsRefresh = { ...refreshCookieOptions };
+
+	// Redirect to frontend
+	res.cookie("accessToken", accessToken, cookieSettingsAccess);
+	res.cookie("refreshToken", refreshToken, cookieSettingsRefresh);
+
+	res.redirect(`${clientUrl}/auth/google/success`);
 };
 
-const logout = (req, res) => {
-	req.logout((err) => {
-		if (err) {
-			return res.status(500).json({ error: err.message });
+const logout = async (req, res) => {
+	try {
+		// Revoke the current token if it exists
+		const token =
+			req.cookies.accessToken ||
+			req.header("Authorization")?.replace("Bearer ", "");
+		if (token) {
+			await tokenService.revokeToken(token);
 		}
-		res.json({ message: "Logged out successfully", isAuthenticated: false });
-	});
+
+		// Clear cookies with proper options to ensure they're removed
+		res.clearCookie("accessToken", {
+			httpOnly: true,
+			path: "/",
+			secure: process.env.NODE_ENV === "production",
+		});
+
+		res.clearCookie("refreshToken", {
+			httpOnly: true,
+			path: "/api/users/refresh",
+			secure: process.env.NODE_ENV === "production",
+		});
+
+		// Logout from session if using Passport
+		req.logout((err) => {
+			if (err) {
+				return res.status(500).json({ error: err.message });
+			}
+			res.json({ message: "Logged out successfully", isAuthenticated: false });
+		});
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
+const refreshToken = async (req, res) => {
+	try {
+		const refreshToken = req.cookies.refreshToken;
+
+		if (!refreshToken) {
+			return res.status(401).json({
+				error: "Refresh token not found",
+				isAuthenticated: false,
+			});
+		}
+
+		// Generate new access token
+		const result = await tokenService.refreshAccessToken(refreshToken);
+
+		if (!result) {
+			// Clear cookies if refresh token is invalid
+			res.clearCookie("accessToken", {
+				httpOnly: true,
+				path: "/",
+				secure: process.env.NODE_ENV === "production",
+			});
+
+			res.clearCookie("refreshToken", {
+				httpOnly: true,
+				path: "/api/users/refresh",
+				secure: process.env.NODE_ENV === "production",
+			});
+
+			return res.status(401).json({
+				error: "Invalid refresh token",
+				isAuthenticated: false,
+			});
+		}
+
+		// Set new access token in cookie
+		res.cookie("accessToken", result.accessToken, cookieOptions);
+
+		return res.json({
+			message: "Token refreshed successfully",
+			tokenExpiry: result.accessTokenExpiry,
+			isAuthenticated: true,
+		});
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
 };
 
 const getProfile = async (req, res) => {
@@ -156,16 +256,17 @@ const getProfile = async (req, res) => {
 };
 
 const checkAuth = (req, res) => {
-	if (req.isAuthenticated()) {
+	if (req.isAuthenticated() || req.user) {
+		const user = req.user;
 		return res.json({
 			isAuthenticated: true,
 			user: {
-				id: req.user._id,
-				name: req.user.name,
-				email: req.user.email,
-				authMethod: req.user.authMethod,
-				profilePicture: req.user.profilePicture,
-				isAdmin: req.user.isAdmin,
+				id: user._id,
+				name: user.name,
+				email: user.email,
+				authMethod: user.authMethod,
+				profilePicture: user.profilePicture,
+				isAdmin: user.isAdmin,
 			},
 		});
 	}
@@ -177,6 +278,7 @@ module.exports = {
 	login,
 	googleAuthCallback,
 	logout,
+	refreshToken,
 	getProfile,
 	checkAuth,
 };

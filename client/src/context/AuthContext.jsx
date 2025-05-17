@@ -49,10 +49,9 @@ export const AuthProvider = ({ children }) => {
 		setError(null);
 		try {
 			const response = await userApi.login(credentials);
-			const { user, token, isAuthenticated } = response.data;
+			const { user, isAuthenticated } = response.data;
 
-			if (isAuthenticated && token) {
-				localStorage.setItem("token", token);
+			if (isAuthenticated) {
 				setUser(user);
 				setIsAuthenticated(true);
 				return { success: true, user };
@@ -81,10 +80,9 @@ export const AuthProvider = ({ children }) => {
 		setError(null);
 		try {
 			const response = await userApi.register(userData);
-			const { user, token, isAuthenticated } = response.data;
+			const { user, isAuthenticated } = response.data;
 
-			if (isAuthenticated && token) {
-				localStorage.setItem("token", token);
+			if (isAuthenticated) {
 				setUser(user);
 				setIsAuthenticated(true);
 				return { success: true, user };
@@ -107,7 +105,6 @@ export const AuthProvider = ({ children }) => {
 		setLoading(true);
 		try {
 			await userApi.logout();
-			localStorage.removeItem("token");
 			setUser(null);
 			setIsAuthenticated(false);
 			navigate("/"); // Navigate to home page after logout
@@ -151,6 +148,8 @@ export const AuthProvider = ({ children }) => {
 		register,
 		logout,
 		getProfile,
+		setUser,
+		setIsAuthenticated,
 	};
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

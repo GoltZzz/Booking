@@ -6,6 +6,7 @@ const session = require("express-session");
 const passport = require("passport");
 const helmet = require("helmet");
 const crypto = require("crypto");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 // Import routes
@@ -70,6 +71,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Session configuration
 app.use(

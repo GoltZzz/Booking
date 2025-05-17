@@ -8,16 +8,31 @@ const api = axios.create({
 	withCredentials: true, // Enable sending cookies with requests
 });
 
-// Add a request interceptor to include the auth token in requests
-api.interceptors.request.use(
-	(config) => {
-		const token = localStorage.getItem("token");
-		if (token) {
-			config.headers.Authorization = `Bearer ${token}`;
-		}
-		return config;
+// Add a response interceptor to handle token expiration
+api.interceptors.response.use(
+	(response) => {
+		return response;
 	},
-	(error) => {
+	async (error) => {
+		const originalRequest = error.config;
+
+		// If the error is 401 and we haven't already tried to refresh
+		if (error.response?.status === 401 && !originalRequest._retry) {
+			originalRequest._retry = true;
+
+			try {
+				// Try to refresh the token
+				await axios.post("/api/users/refresh", {}, { withCredentials: true });
+
+				// Retry the original request
+				return api(originalRequest);
+			} catch (refreshError) {
+				// If refresh fails, redirect to login
+				window.location.href = "/login";
+				return Promise.reject(refreshError);
+			}
+		}
+
 		return Promise.reject(error);
 	}
 );
@@ -29,6 +44,7 @@ export const userApi = {
 	logout: () => api.post("/users/logout"),
 	getProfile: () => api.get("/users/profile"),
 	checkAuth: () => api.get("/users/check-auth"),
+	refreshToken: () => api.post("/users/refresh"),
 };
 
 // Booking related API calls

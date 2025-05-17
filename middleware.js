@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
 const User = require("./model/User");
+const tokenService = require("./utils/tokenService");
 require("dotenv").config();
 
 // Middleware to verify JWT token or use Passport session
@@ -10,7 +10,13 @@ const authenticateToken = async (req, res, next) => {
 	}
 
 	try {
-		const token = req.header("Authorization")?.replace("Bearer ", "");
+		// Try to get token from cookie first (more secure)
+		let token = req.cookies.accessToken;
+
+		// Fallback to Authorization header if no cookie
+		if (!token) {
+			token = req.header("Authorization")?.replace("Bearer ", "");
+		}
 
 		if (!token) {
 			return res.status(401).json({
@@ -19,10 +25,16 @@ const authenticateToken = async (req, res, next) => {
 			});
 		}
 
-		const decoded = jwt.verify(
-			token,
-			process.env.JWT_SECRET || "your-fallback-secret"
-		);
+		// Verify token using token service (checks if revoked)
+		const decoded = await tokenService.verifyToken(token);
+
+		if (!decoded) {
+			return res.status(401).json({
+				error: "Invalid or expired token",
+				isAuthenticated: false,
+			});
+		}
+
 		const user = await User.findById(decoded.userId);
 
 		if (!user) {

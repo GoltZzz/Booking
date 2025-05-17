@@ -1,55 +1,113 @@
 function isLoggedIn() {
-	return localStorage.getItem("token") !== null;
+	// We can't directly check for HTTP-only cookies, so we'll rely on the server's response
+	// We'll keep a flag in sessionStorage to avoid unnecessary API calls
+	const authStatus = sessionStorage.getItem("isAuthenticated");
+	return authStatus === "true";
 }
 
 function getCurrentUser() {
-	const userJson = localStorage.getItem("user");
+	const userJson = sessionStorage.getItem("user");
 	return userJson ? JSON.parse(userJson) : null;
 }
 
-function getToken() {
-	return localStorage.getItem("token");
+function setAuthStatus(isAuthenticated, user) {
+	sessionStorage.setItem("isAuthenticated", isAuthenticated);
+	if (user) {
+		sessionStorage.setItem("user", JSON.stringify(user));
+	} else {
+		sessionStorage.removeItem("user");
+	}
 }
 
-function logout() {
-	localStorage.removeItem("token");
-	localStorage.removeItem("user");
-	window.location.href = "/";
+async function logout() {
+	try {
+		// Call the logout endpoint to revoke tokens
+		await fetch("/api/users/logout", {
+			method: "POST",
+			credentials: "include", // Important for cookies
+		});
+
+		// Clear session storage
+		sessionStorage.removeItem("isAuthenticated");
+		sessionStorage.removeItem("user");
+
+		// Redirect to home
+		window.location.href = "/";
+	} catch (error) {
+		console.error("Logout failed:", error);
+		// Still clear local data and redirect
+		sessionStorage.removeItem("isAuthenticated");
+		sessionStorage.removeItem("user");
+		window.location.href = "/";
+	}
 }
 
-function checkAuth() {
-	if (!isLoggedIn()) {
+async function checkAuth() {
+	try {
+		const response = await fetch("/api/users/check-auth", {
+			credentials: "include", // Important for cookies
+		});
+
+		const data = await response.json();
+
+		if (data.isAuthenticated) {
+			setAuthStatus(true, data.user);
+			return true;
+		} else {
+			setAuthStatus(false);
+			window.location.href =
+				"/login?redirect=" + encodeURIComponent(window.location.pathname);
+			return false;
+		}
+	} catch (error) {
+		console.error("Auth check failed:", error);
+		setAuthStatus(false);
 		window.location.href =
 			"/login?redirect=" + encodeURIComponent(window.location.pathname);
 		return false;
 	}
-	return true;
 }
 
 async function authenticatedFetch(url, options = {}) {
-	const token = getToken();
+	try {
+		const response = await fetch(url, {
+			...options,
+			credentials: "include", // Important for cookies
+			headers: {
+				"Content-Type": "application/json",
+				...(options.headers || {}),
+			},
+		});
 
-	if (!token) {
-		throw new Error("No authentication token found");
+		if (response.status === 401) {
+			// Try to refresh the token
+			const refreshResponse = await fetch("/api/users/refresh", {
+				method: "POST",
+				credentials: "include",
+			});
+
+			if (refreshResponse.ok) {
+				// Retry the original request
+				return fetch(url, {
+					...options,
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+						...(options.headers || {}),
+					},
+				});
+			} else {
+				// If refresh fails, logout
+				logout();
+				throw new Error("Your session has expired. Please login again.");
+			}
+		}
+
+		return response;
+	} catch (error) {
+		console.error("Request failed:", error);
+		throw error;
 	}
-
-	const headers = {
-		"Content-Type": "application/json",
-		Authorization: `Bearer ${token}`,
-		...(options.headers || {}),
-	};
-
-	const response = await fetch(url, {
-		...options,
-		headers,
-	});
-
-	if (response.status === 401) {
-		logout();
-		throw new Error("Your session has expired. Please login again.");
-	}
-
-	return response;
 }
 
 function updateNavigation() {
@@ -72,8 +130,22 @@ function updateNavigation() {
 	}
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-	updateNavigation();
+// Check auth status when the page loads
+document.addEventListener("DOMContentLoaded", async function () {
+	// Check auth status with the server
+	await fetch("/api/users/check-auth", {
+		credentials: "include",
+	})
+		.then((res) => res.json())
+		.then((data) => {
+			setAuthStatus(data.isAuthenticated, data.user);
+			updateNavigation();
+		})
+		.catch((err) => {
+			console.error("Error checking auth status:", err);
+			setAuthStatus(false);
+			updateNavigation();
+		});
 
 	const logoutBtn = document.getElementById("logoutBtn");
 	if (logoutBtn) {
