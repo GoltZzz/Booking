@@ -6,12 +6,15 @@ import {
 	FiMapPin,
 	FiCalendar,
 	FiCamera,
+	FiLayout,
 } from "react-icons/fi";
 import LogoImage from "../assets/images/Logo.jpg";
 import BirthdayImage from "../assets/images/birthday.jpg";
 import WeddingImage from "../assets/images/wedding pre-nup.jpg";
 import DebutImage from "../assets/images/debut.jpg";
 import MaternityImage from "../assets/images/maternity.jpg";
+import MainNavbar from "../components/MainNavbar";
+import { useAuth } from "../context/AuthContext";
 
 const LandingPage = () => {
 	const [searchData, setSearchData] = useState({
@@ -19,6 +22,7 @@ const LandingPage = () => {
 		date: "",
 		service: "",
 	});
+	const { isAuthenticated } = useAuth();
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -37,7 +41,7 @@ const LandingPage = () => {
 		{
 			id: 1,
 			title: "Birthday Photoshoot",
-			location: "MJ Studios, New York",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.9,
 			reviewCount: 124,
 			price: 150,
@@ -46,7 +50,7 @@ const LandingPage = () => {
 		{
 			id: 2,
 			title: "Wedding Pre-nup Photography",
-			location: "MJ Studios, New York",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.8,
 			reviewCount: 98,
 			price: 175,
@@ -55,7 +59,7 @@ const LandingPage = () => {
 		{
 			id: 3,
 			title: "Debut Photoshoot",
-			location: "MJ Studios, California",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.95,
 			reviewCount: 156,
 			price: 180,
@@ -64,7 +68,7 @@ const LandingPage = () => {
 		{
 			id: 4,
 			title: "Maternity Photoshoot",
-			location: "MJ Studios, Illinois",
+			location: "MJ Studios, City of Santiago",
 			rating: 4.85,
 			reviewCount: 112,
 			price: 160,
@@ -102,57 +106,7 @@ const LandingPage = () => {
 
 	return (
 		<div className="landing-page bg-[#121212]">
-			<header className="bg-[#1e1e1e] shadow-md sticky top-0 z-10">
-				<div className="container-custom py-3 flex justify-between items-center">
-					<Link to="/" className="flex items-center">
-						<img
-							src={LogoImage}
-							alt="MJ Studios Logo"
-							className="h-12 w-auto mr-3"
-						/>
-						<span className="text-xl font-bold text-[#e0e0e0]">MJ Studios</span>
-					</Link>
-
-					<nav className="hidden md:flex items-center space-x-6">
-						<Link
-							to="/explore"
-							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
-							Explore
-						</Link>
-						<Link
-							to="/how-it-works"
-							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
-							How it works
-						</Link>
-						<Link
-							to="/login"
-							className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
-							Sign in
-						</Link>
-						<Link
-							to="/register"
-							className="bg-[#bb86fc] text-[#121212] px-4 py-2 rounded-md hover:bg-[#a06cd5] transition-colors">
-							Sign up
-						</Link>
-					</nav>
-
-					<button className="md:hidden text-gray-300">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="h-6 w-6"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M4 6h16M4 12h16M4 18h16"
-							/>
-						</svg>
-					</button>
-				</div>
-			</header>
+			<MainNavbar />
 
 			<section
 				className="relative h-[600px] bg-cover bg-center"
@@ -169,6 +123,17 @@ const LandingPage = () => {
 						Find and book the perfect studio space or photographer for your next
 						photoshoot
 					</p>
+
+					{isAuthenticated ? (
+						<div className="mb-8">
+							<Link
+								to="/dashboard"
+								className="inline-flex items-center px-8 py-4 bg-[#bb86fc] text-[#121212] font-bold rounded-lg shadow-lg hover:bg-[#a06cd5] transition-all transform hover:scale-105 duration-300">
+								<FiLayout className="mr-2 text-xl" />
+								Go to Your Dashboard
+							</Link>
+						</div>
+					) : null}
 
 					<form
 						onSubmit={handleSearch}
@@ -268,7 +233,7 @@ const LandingPage = () => {
 									</div>
 									<div className="text-sm text-gray-400 mb-3">
 										<span className="text-[#bb86fc] font-bold">
-											${listing.price}
+											₱{listing.price}
 										</span>{" "}
 										/ session
 									</div>
@@ -283,11 +248,26 @@ const LandingPage = () => {
 					</div>
 
 					<div className="mt-12 text-center">
-						<Link
-							to="/explore"
-							className="bg-[#bb86fc] text-[#121212] px-8 py-3 rounded-md hover:bg-[#a06cd5] transition-colors">
-							Book a Session
-						</Link>
+						{isAuthenticated ? (
+							<div className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
+								<Link
+									to="/booking"
+									className="bg-[#bb86fc] text-[#121212] px-8 py-3 rounded-md hover:bg-[#a06cd5] transition-colors">
+									Book a Session
+								</Link>
+								<Link
+									to="/dashboard"
+									className="border border-[#bb86fc] text-[#bb86fc] px-8 py-3 rounded-md hover:bg-[#bb86fc] hover:text-[#121212] transition-colors">
+									View Your Dashboard
+								</Link>
+							</div>
+						) : (
+							<Link
+								to="/explore"
+								className="bg-[#bb86fc] text-[#121212] px-8 py-3 rounded-md hover:bg-[#a06cd5] transition-colors">
+								Book a Session
+							</Link>
+						)}
 					</div>
 				</div>
 			</section>
@@ -400,11 +380,26 @@ const LandingPage = () => {
 						Join thousands of photographers and clients who trust MJ Studios for
 						their photography needs
 					</p>
-					<Link
-						to="/register"
-						className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
-						Get Started Today
-					</Link>
+					{isAuthenticated ? (
+						<div className="flex flex-col md:flex-row justify-center gap-4">
+							<Link
+								to="/booking"
+								className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
+								Book a Session Now
+							</Link>
+							<Link
+								to="/dashboard"
+								className="inline-block bg-[#2d2d2d] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#121212] border border-[#121212] transition-colors">
+								Go to Dashboard
+							</Link>
+						</div>
+					) : (
+						<Link
+							to="/register"
+							className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
+							Get Started Today
+						</Link>
+					)}
 				</div>
 			</section>
 
@@ -423,6 +418,13 @@ const LandingPage = () => {
 							<p className="text-gray-400">
 								Find and book the perfect photography space for your next shoot.
 							</p>
+							<div className="mt-4">
+								<p className="text-gray-400">Charles M.B Building</p>
+								<p className="text-gray-400">Calao East, City of Santiago</p>
+								<p className="text-gray-400">Isabela 3311</p>
+								<p className="text-gray-400">Phone: 0939 808 9460</p>
+								<p className="text-gray-400">Email: mjtuazon08@gmail.com</p>
+							</div>
 						</div>
 
 						<div>

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { userApi } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Auth.css";
+import googleLogo from "../assets/images/google-logo.png";
 
 const Register = () => {
 	const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ const Register = () => {
 		phone: "",
 	});
 	const [error, setError] = useState("");
-	const [loading, setLoading] = useState(false);
+	const { register, googleLogin, loading } = useAuth();
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -27,27 +28,39 @@ const Register = () => {
 		e.preventDefault();
 		setError("");
 
-		// Validate passwords match
 		if (formData.password !== formData.confirmPassword) {
 			setError("Passwords do not match");
 			return;
 		}
 
-		setLoading(true);
-
-		try {
-			const { confirmPassword, ...registerData } = formData;
-
-			const response = await userApi.register(registerData);
-			localStorage.setItem("token", response.data.token);
-			navigate("/dashboard");
-		} catch (err) {
-			setError(
-				err.response?.data?.message || "Registration failed. Please try again."
-			);
-		} finally {
-			setLoading(false);
+		if (formData.password.length < 6) {
+			setError("Password must be at least 6 characters");
+			return;
 		}
+
+		const registerData = {
+			name: formData.name,
+			email: formData.email,
+			password: formData.password,
+			phone: formData.phone,
+		};
+
+		console.log("Sending registration data:", registerData);
+
+		const result = await register(registerData);
+		console.log("Register function returned:", result);
+
+		if (result.success) {
+			console.log("Registration successful, navigating to home");
+			navigate("/");
+		} else {
+			console.log("Registration failed with error:", result.error);
+			setError(result.error);
+		}
+	};
+
+	const handleGoogleSignup = () => {
+		googleLogin();
 	};
 
 	return (
@@ -124,6 +137,18 @@ const Register = () => {
 						{loading ? "Registering..." : "Register"}
 					</button>
 				</form>
+
+				<div className="auth-divider">
+					<span>OR</span>
+				</div>
+
+				<button
+					onClick={handleGoogleSignup}
+					className="btn google-btn"
+					type="button">
+					<img src={googleLogo} alt="Google logo" className="google-icon" />
+					Sign up with Google
+				</button>
 
 				<div className="auth-links">
 					<p>

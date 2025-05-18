@@ -10,8 +10,12 @@ const Footer = () => {
 				</div>
 				<div className="footer-section">
 					<h3>Contact Us</h3>
-					<p>Email: info@mjstudios.com</p>
-					<p>Phone: (123) 456-7890</p>
+					<p>Email: mjtuazon08@gmail.com</p>
+					<p>Phone: 0939 808 9460</p>
+					<p>
+						Address: Charles M.B Building, Calao East, City of Santiago, Isabela
+						3311
+					</p>
 				</div>
 				<div className="footer-section">
 					<h3>Follow Us</h3>

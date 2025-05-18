@@ -1,33 +1,56 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { packageApi } from "../services/api";
 import "../styles/Home.css";
 
 const Home = () => {
-	const [packages, setPackages] = useState([]);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		const fetchPackages = async () => {
-			try {
-				const response = await packageApi.getPackages();
-				setPackages(response.data);
-				setLoading(false);
-			} catch (error) {
-				console.error("Error fetching packages:", error);
-				setLoading(false);
-			}
-		};
-
-		fetchPackages();
-	}, []);
+	const packages = [
+		{
+			_id: "1",
+			name: "Basic",
+			price: 199,
+			duration: 2,
+			features: [
+				"2-hour photo booth rental",
+				"Unlimited prints",
+				"Digital gallery",
+				"Basic props",
+			],
+		},
+		{
+			_id: "2",
+			name: "Standard",
+			price: 299,
+			duration: 3,
+			features: [
+				"3-hour photo booth rental",
+				"Unlimited prints",
+				"Digital gallery",
+				"Premium props",
+				"Custom backdrop",
+			],
+		},
+		{
+			_id: "3",
+			name: "Premium",
+			price: 399,
+			duration: 4,
+			features: [
+				"4-hour photo booth rental",
+				"Unlimited prints",
+				"Digital gallery",
+				"Premium props",
+				"Custom backdrop",
+				"Photo guest book",
+				"USB with all images",
+			],
+		},
+	];
 
 	return (
 		<div className="home">
 			<section className="hero">
 				<div className="hero-content">
-					<h1>MJ Studios Photo Booth</h1>
-					<p>Capture Unforgettable Moments at Your Next Event</p>
+					<h1>Event Booking System</h1>
+					<p>Schedule and Manage Your Events with Ease</p>
 					<Link to="/booking" className="btn">
 						Book Now
 					</Link>
@@ -36,13 +59,14 @@ const Home = () => {
 
 			<section className="about">
 				<div className="container">
-					<h2>About Our Photo Booth</h2>
+					<h2>About Our Booking System</h2>
 					<p>
-						MJ Studios offers premium photo booth experiences for all types of
-						events. Our state-of-the-art booths are equipped with high-quality
-						cameras and printers to ensure your memories are captured perfectly.
-						Whether it's a wedding, birthday, corporate event, or any special
-						occasion, we've got you covered!
+						Our booking system makes it easy to schedule and manage events of
+						all types. Whether you're planning a wedding, corporate event, or
+						private party, our streamlined process ensures your event is
+						organized perfectly. With real-time availability, email
+						notifications, and a user-friendly interface, booking has never been
+						easier!
 					</p>
 				</div>
 			</section>
@@ -50,28 +74,23 @@ const Home = () => {
 			<section className="packages">
 				<div className="container">
 					<h2>Our Packages</h2>
-
-					{loading ? (
-						<p>Loading packages...</p>
-					) : (
-						<div className="package-grid">
-							{packages.map((pkg) => (
-								<div className="package-card" key={pkg._id}>
-									<h3>{pkg.name}</h3>
-									<p className="price">${pkg.price}</p>
-									<p className="duration">{pkg.duration} hours</p>
-									<ul className="features">
-										{pkg.features.map((feature, index) => (
-											<li key={index}>{feature}</li>
-										))}
-									</ul>
-									<Link to="/booking" className="btn btn-outline">
-										Select Package
-									</Link>
-								</div>
-							))}
-						</div>
-					)}
+					<div className="package-grid">
+						{packages.map((pkg) => (
+							<div className="package-card" key={pkg._id}>
+								<h3>{pkg.name}</h3>
+								<p className="price">${pkg.price}</p>
+								<p className="duration">{pkg.duration} hours</p>
+								<ul className="features">
+									{pkg.features.map((feature, index) => (
+										<li key={index}>{feature}</li>
+									))}
+								</ul>
+								<Link to="/booking" className="btn btn-outline">
+									Select Package
+								</Link>
+							</div>
+						))}
+					</div>
 				</div>
 			</section>
 
@@ -81,22 +100,22 @@ const Home = () => {
 					<div className="testimonial-grid">
 						<div className="testimonial">
 							<p>
-								"MJ Studios made our wedding day extra special. The photo booth
-								was a hit with all our guests!"
+								"This booking system made our wedding planning so much easier!
+								The email confirmations kept everyone on the same page."
 							</p>
 							<span>- Sarah & John</span>
 						</div>
 						<div className="testimonial">
 							<p>
-								"Professional service and high-quality photos. Would definitely
-								book again!"
+								"Professional service and an intuitive interface. Would
+								definitely recommend!"
 							</p>
 							<span>- Corporate Event Planner</span>
 						</div>
 						<div className="testimonial">
 							<p>
-								"The props were amazing and the attendant was so helpful.
-								Everyone had a blast!"
+								"The booking process was seamless and the admin was very
+								responsive to our requests."
 							</p>
 							<span>- Birthday Celebration</span>
 						</div>
