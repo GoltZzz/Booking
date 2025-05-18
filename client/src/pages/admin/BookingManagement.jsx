@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
 import AdminBookingList from "../../components/AdminBookingList";
 import { useEffect } from "react";
+import { FiCalendar } from "react-icons/fi";
 
 const BookingManagement = () => {
 	const { user, isAuthenticated, loading } = useAuth();
@@ -23,8 +24,8 @@ const BookingManagement = () => {
 
 	if (loading) {
 		return (
-			<div className="min-h-screen flex justify-center items-center">
-				<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+			<div className="min-h-screen flex justify-center items-center bg-[#121212]">
+				<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#bb86fc]"></div>
 			</div>
 		);
 	}
@@ -41,17 +42,17 @@ const BookingManagement = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex">
+		<div className="min-h-screen bg-[#121212] flex">
 			<AdminSidebar />
-			<div className="flex-1 p-8">
-				<div className="max-w-7xl mx-auto">
-					<h1 className="text-2xl font-bold text-gray-800 mb-6">
-						Booking Management
-					</h1>
-
-					<div className="bg-white rounded-lg shadow-md p-6">
-						<AdminBookingList />
+			<div className="flex-1 overflow-auto p-6">
+				<div className="bg-[#1e1e1e] rounded-lg p-6 shadow-lg border border-[#333333] min-h-[calc(100vh-3rem)]">
+					<div className="flex items-center justify-between mb-6">
+						<h1 className="text-2xl font-bold text-[#e0e0e0] flex items-center">
+							<FiCalendar className="mr-2 text-[#bb86fc]" /> Booking Management
+						</h1>
 					</div>
+
+					<AdminBookingList />
 				</div>
 			</div>
 		</div>
