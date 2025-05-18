@@ -41,12 +41,11 @@ axiosInstance.interceptors.response.use(
 
 			// Handle 401 Unauthorized errors
 			if (error.response.status === 401) {
-				console.log("Unauthorized access, redirecting to login");
+				console.log("Unauthorized access detected");
 				localStorage.removeItem("token");
-				// Only redirect if not already on login page
-				if (window.location.pathname !== "/login") {
-					window.location.href = "/login";
-				}
+
+				// Don't automatically redirect - let the component handle this
+				// This way LandingPage remains accessible after logout
 			}
 		}
 		return Promise.reject(error);
