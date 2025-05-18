@@ -9,20 +9,16 @@ const crypto = require("crypto");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
-// Import routes
 const userRoutes = require("./routes/userRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const packageRoutes = require("./routes/packageRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 
-// Import controllers
 const packageController = require("./controller/packageController");
 
-// Initialize express app
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
 app.use(
 	cors({
 		origin:
@@ -31,13 +27,11 @@ app.use(
 	})
 );
 
-// Generate CSP nonce for each request
 app.use((req, res, next) => {
 	res.locals.cspNonce = crypto.randomBytes(16).toString("hex");
 	next();
 });
 
-// Helmet security middleware
 app.use(
 	helmet({
 		contentSecurityPolicy: {
@@ -73,7 +67,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Session configuration
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET || "your-session-secret",
@@ -81,25 +74,21 @@ app.use(
 		saveUninitialized: false,
 		cookie: {
 			secure: process.env.NODE_ENV === "production",
-			maxAge: 24 * 60 * 60 * 1000, // 24 hours
+			maxAge: 24 * 60 * 60 * 1000,
 		},
 	})
 );
 
-// Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Import Passport config
 require("./config/passport");
 
-// API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/packages", packageRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Global error handler
 app.use((err, req, res, next) => {
 	console.error("Global Error Handler:", err);
 	res.status(500).json({
@@ -109,7 +98,6 @@ app.use((err, req, res, next) => {
 	});
 });
 
-// Serve React frontend in production
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "client/dist")));
 
@@ -118,31 +106,26 @@ if (process.env.NODE_ENV === "production") {
 	});
 }
 
-// Connect to MongoDB
 mongoose
 	.connect(
 		process.env.MONGODB_URI || "mongodb://localhost:27017/photo-booth-booking"
 	)
 	.then(() => {
 		console.log("Connected to MongoDB");
-		// Create default packages
 		packageController.createDefaultPackages();
 	})
 	.catch((err) => {
 		console.error("MongoDB connection error:", err);
 	});
 
-// Start server
 app.listen(port, () => {
 	console.log(`Server running on port ${port}`);
 });
 
-// Handle unhandled promise rejections
 process.on("unhandledRejection", (reason, promise) => {
 	console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
-// Handle uncaught exceptions
 process.on("uncaughtException", (error) => {
 	console.error("Uncaught Exception:", error);
 });

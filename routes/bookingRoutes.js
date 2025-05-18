@@ -11,7 +11,6 @@ router.get("/", bookingController.getUserBookings);
 // Admin only routes - MUST come before the /:id route to avoid conflicts
 router.get(
 	"/all",
-	// Debug middleware for /all route
 	(req, res, next) => {
 		console.log("==== DEBUG /api/bookings/all ====");
 		console.log("Headers:", JSON.stringify(req.headers));
@@ -21,9 +20,7 @@ router.get(
 		console.log("================================");
 		next();
 	},
-	// Standard admin middleware
 	requireAdmin,
-	// Error handling wrapper for controller
 	(req, res, next) => {
 		try {
 			bookingController.getAllBookings(req, res, next);

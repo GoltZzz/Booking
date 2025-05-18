@@ -28,19 +28,16 @@ const Register = () => {
 		e.preventDefault();
 		setError("");
 
-		// Validate passwords match
 		if (formData.password !== formData.confirmPassword) {
 			setError("Passwords do not match");
 			return;
 		}
 
-		// Validate password length
 		if (formData.password.length < 6) {
 			setError("Password must be at least 6 characters");
 			return;
 		}
 
-		// Create a new object with only the fields needed for registration
 		const registerData = {
 			name: formData.name,
 			email: formData.email,

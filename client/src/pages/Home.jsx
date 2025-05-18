@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import "../styles/Home.css";
 
 const Home = () => {
-	// Hardcoded packages instead of fetching them since we're focused on the booking system
 	const packages = [
 		{
 			_id: "1",

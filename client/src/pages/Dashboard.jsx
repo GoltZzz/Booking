@@ -38,7 +38,6 @@ const Dashboard = () => {
 
 	return (
 		<div className="min-h-screen dashboard-gradient-bg relative py-12">
-			{/* Animated background shapes */}
 			<div className="animated-shapes">
 				<div className="shape"></div>
 				<div className="shape"></div>
@@ -47,7 +46,6 @@ const Dashboard = () => {
 				<div className="shape"></div>
 			</div>
 
-			{/* Navigation bar */}
 			<div className="fixed top-0 left-0 w-full bg-gray-900/60 backdrop-blur-md z-20 py-3 px-4">
 				<div className="max-w-5xl mx-auto flex justify-between items-center">
 					<Link
@@ -60,7 +58,6 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			{/* Content */}
 			<div className="max-w-5xl mx-auto px-4 relative z-10 pt-12">
 				<div className="dashboard-card rounded-xl shadow-xl p-6 mb-8">
 					<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -96,7 +93,6 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				{/* Additional section for dashboard content */}
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 					<div className="dashboard-card rounded-xl shadow-xl p-6">
 						<h2 className="text-xl font-bold mb-5 tracking-tight section-title gradient-text-actions">
@@ -199,10 +195,10 @@ const Dashboard = () => {
 							</div>
 							<div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg">
 								<h3 className="font-semibold text-green-700 dark:text-green-300 text-base">
-									Maternity Photoshoot
+									Maternity Shoot
 								</h3>
 								<p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-									Cherish the journey
+									Beautiful expectant moments
 								</p>
 							</div>
 						</div>

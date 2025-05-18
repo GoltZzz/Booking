@@ -4,10 +4,8 @@ const { requireAdmin } = require("../middleware");
 const User = require("../model/User");
 const Booking = require("../model/Booking");
 
-// Protect all admin routes
 router.use(requireAdmin);
 
-// User management routes
 router.get("/users", async (req, res) => {
 	try {
 		const users = await User.find().select("-password");
@@ -60,7 +58,6 @@ router.delete("/users/:id", async (req, res) => {
 	}
 });
 
-// Booking management routes
 router.get("/bookings", async (req, res) => {
 	try {
 		const bookings = await Booking.find().populate("user", "name email");
@@ -113,7 +110,6 @@ router.delete("/bookings/:id", async (req, res) => {
 	}
 });
 
-// Dashboard statistics
 router.get("/stats", async (req, res) => {
 	try {
 		const userCount = await User.countDocuments();
@@ -123,13 +119,11 @@ router.get("/stats", async (req, res) => {
 			status: "confirmed",
 		});
 
-		// Recent bookings
 		const recentBookings = await Booking.find()
 			.sort({ createdAt: -1 })
 			.limit(5)
 			.populate("user", "name email");
 
-		// Recent users
 		const recentUsers = await User.find()
 			.sort({ createdAt: -1 })
 			.limit(5)

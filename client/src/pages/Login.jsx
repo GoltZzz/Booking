@@ -18,7 +18,6 @@ const Login = () => {
 	const toast = useToast();
 	const navigate = useNavigate();
 
-	// Debug logging
 	useEffect(() => {
 		console.log("Login Page - Current User:", user);
 	}, [user]);
@@ -30,7 +29,6 @@ const Login = () => {
 			[name]: value,
 		}));
 
-		// Clear error when user starts typing
 		if (errors[name]) {
 			setErrors((prev) => ({
 				...prev,
@@ -42,14 +40,12 @@ const Login = () => {
 	const validateForm = () => {
 		const newErrors = {};
 
-		// Email validation
 		if (!formData.email) {
 			newErrors.email = "Email is required";
 		} else if (!/\S+@\S+\.\S+/.test(formData.email)) {
 			newErrors.email = "Email is invalid";
 		}
 
-		// Password validation
 		if (!formData.password) {
 			newErrors.password = "Password is required";
 		}
@@ -71,12 +67,10 @@ const Login = () => {
 			if (result.success) {
 				toast.success("Login successful!");
 
-				// If user is admin, redirect to admin panel
 				if (result.user && result.user.isAdmin) {
 					console.log("Admin user detected, redirecting to admin panel");
 					navigate("/admin/bookings");
 				} else {
-					// Regular user, go to dashboard
 					console.log("Regular user detected, redirecting to dashboard");
 					navigate("/dashboard");
 				}
