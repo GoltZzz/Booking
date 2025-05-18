@@ -1,9 +1,20 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FiX } from "react-icons/fi";
 import "../styles/Modal.css";
 
 const Modal = ({ isOpen, onClose, title, children }) => {
 	const modalRef = useRef(null);
 	const closeButtonRef = useRef(null);
+	const [isClosing, setIsClosing] = useState(false);
+
+	// Handle close with animation
+	const handleClose = () => {
+		setIsClosing(true);
+		setTimeout(() => {
+			setIsClosing(false);
+			onClose();
+		}, 200); // Match this with the animation duration in CSS
+	};
 
 	// Prevent scrolling when modal is open
 	useEffect(() => {
@@ -26,7 +37,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 	useEffect(() => {
 		const handleEscKey = (event) => {
 			if (event.key === "Escape" && isOpen) {
-				onClose();
+				handleClose();
 			}
 		};
 
@@ -34,13 +45,13 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 		return () => {
 			document.removeEventListener("keydown", handleEscKey);
 		};
-	}, [isOpen, onClose]);
+	}, [isOpen]);
 
 	// Handle click outside
 	useEffect(() => {
 		const handleClickOutside = (event) => {
 			if (modalRef.current && !modalRef.current.contains(event.target)) {
-				onClose();
+				handleClose();
 			}
 		};
 
@@ -53,7 +64,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
-	}, [isOpen, onClose]);
+	}, [isOpen]);
 
 	// Handle tab trap inside modal
 	useEffect(() => {
@@ -96,11 +107,11 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 		};
 	}, [isOpen]);
 
-	if (!isOpen) return null;
+	if (!isOpen && !isClosing) return null;
 
 	return (
 		<div
-			className="modal-overlay"
+			className={`modal-overlay ${isClosing ? "closing" : ""}`}
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="modal-title">
@@ -109,10 +120,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 					<h2 id="modal-title">{title}</h2>
 					<button
 						className="modal-close"
-						onClick={onClose}
+						onClick={handleClose}
 						ref={closeButtonRef}
 						aria-label="Close modal">
-						&times;
+						<FiX />
 					</button>
 				</div>
 				<div className="modal-body">{children}</div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiMail, FiLock, FiUser } from "react-icons/fi";
 import Modal from "./Modal";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -98,7 +99,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 	const isDisabled = loginStatus === "loading" || loginStatus === "success";
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} title="Sign In">
+		<Modal isOpen={isOpen} onClose={onClose} title="Welcome Back">
 			{errors.general && (
 				<ErrorMessage message={errors.general} type="error" className="mb-4" />
 			)}
@@ -115,6 +116,8 @@ const LoginModal = ({ isOpen, onClose }) => {
 					error={errors.email}
 					autoComplete="email"
 					disabled={isDisabled}
+					icon={<FiMail size={18} />}
+					placeholder="your.email@example.com"
 				/>
 
 				<FormInput
@@ -128,7 +131,21 @@ const LoginModal = ({ isOpen, onClose }) => {
 					error={errors.password}
 					autoComplete="current-password"
 					disabled={isDisabled}
+					icon={<FiLock size={18} />}
+					placeholder="Enter your password"
 				/>
+
+				<div className="flex justify-end mb-2">
+					<button
+						type="button"
+						className="text-sm text-[#bb86fc] hover:underline"
+						onClick={() => {
+							// Handle forgot password (can be implemented later)
+							toast.info("Password reset functionality coming soon!");
+						}}>
+						Forgot Password?
+					</button>
+				</div>
 
 				<Button
 					type="submit"

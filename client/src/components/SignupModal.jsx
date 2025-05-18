@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiMail, FiLock, FiUser, FiPhone } from "react-icons/fi";
 import Modal from "./Modal";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -125,7 +126,7 @@ const SignupModal = ({ isOpen, onClose }) => {
 	const isDisabled = signupStatus === "loading" || signupStatus === "success";
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} title="Create an Account">
+		<Modal isOpen={isOpen} onClose={onClose} title="Join Our Community">
 			{errors.general && (
 				<ErrorMessage message={errors.general} type="error" className="mb-4" />
 			)}
@@ -142,6 +143,8 @@ const SignupModal = ({ isOpen, onClose }) => {
 					error={errors.name}
 					autoComplete="name"
 					disabled={isDisabled}
+					icon={<FiUser size={18} />}
+					placeholder="John Doe"
 				/>
 
 				<FormInput
@@ -155,6 +158,8 @@ const SignupModal = ({ isOpen, onClose }) => {
 					error={errors.email}
 					autoComplete="email"
 					disabled={isDisabled}
+					icon={<FiMail size={18} />}
+					placeholder="your.email@example.com"
 				/>
 
 				<FormInput
@@ -168,36 +173,44 @@ const SignupModal = ({ isOpen, onClose }) => {
 					error={errors.phone}
 					autoComplete="tel"
 					disabled={isDisabled}
+					icon={<FiPhone size={18} />}
+					placeholder="(123) 456-7890"
 				/>
 
-				<FormInput
-					id="modal-password"
-					label="Password"
-					type="password"
-					name="password"
-					value={formData.password}
-					onChange={handleChange}
-					required
-					minLength="6"
-					error={errors.password}
-					helperText="Password must be at least 6 characters"
-					autoComplete="new-password"
-					disabled={isDisabled}
-				/>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<FormInput
+						id="modal-password"
+						label="Password"
+						type="password"
+						name="password"
+						value={formData.password}
+						onChange={handleChange}
+						required
+						minLength="6"
+						error={errors.password}
+						helperText="Password must be at least 6 characters"
+						autoComplete="new-password"
+						disabled={isDisabled}
+						icon={<FiLock size={18} />}
+						placeholder="Create password"
+					/>
 
-				<FormInput
-					id="modal-confirm-password"
-					label="Confirm Password"
-					type="password"
-					name="confirmPassword"
-					value={formData.confirmPassword}
-					onChange={handleChange}
-					required
-					minLength="6"
-					error={errors.confirmPassword}
-					autoComplete="new-password"
-					disabled={isDisabled}
-				/>
+					<FormInput
+						id="modal-confirm-password"
+						label="Confirm Password"
+						type="password"
+						name="confirmPassword"
+						value={formData.confirmPassword}
+						onChange={handleChange}
+						required
+						minLength="6"
+						error={errors.confirmPassword}
+						autoComplete="new-password"
+						disabled={isDisabled}
+						icon={<FiLock size={18} />}
+						placeholder="Confirm password"
+					/>
+				</div>
 
 				<Button
 					type="submit"
@@ -205,7 +218,7 @@ const SignupModal = ({ isOpen, onClose }) => {
 					loading={signupStatus === "loading"}
 					disabled={isDisabled}
 					className="mt-4">
-					{signupStatus === "success" ? "Success!" : "Register"}
+					{signupStatus === "success" ? "Success!" : "Create Account"}
 				</Button>
 			</form>
 
