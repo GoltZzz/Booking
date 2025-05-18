@@ -23,15 +23,40 @@ const createBooking = async (req, res) => {
 		try {
 			// Send notification to admin(s)
 			if (adminUsers.length > 0) {
-				await emailService.sendNewBookingNotification(
-					booking,
-					req.user,
-					adminUsers[0].email
-				);
+				const adminEmail = adminUsers[0].email;
+				const notificationResult =
+					await emailService.sendNewBookingNotification(
+						booking,
+						req.user,
+						adminEmail
+					);
+
+				if (notificationResult && notificationResult.mailgunRestriction) {
+					console.log(
+						`⚠️ Email to admin skipped: ${notificationResult.reason}`
+					);
+				} else {
+					console.log(
+						`Admin notification email sent to ${adminEmail}:`,
+						notificationResult
+					);
+				}
 			}
 
 			// Send confirmation to user
-			await emailService.sendBookingConfirmation(booking, req.user);
+			const confirmationResult = await emailService.sendBookingConfirmation(
+				booking,
+				req.user
+			);
+
+			if (confirmationResult && confirmationResult.mailgunRestriction) {
+				console.log(`⚠️ Email to user skipped: ${confirmationResult.reason}`);
+			} else {
+				console.log(
+					`Booking confirmation email sent to ${req.user.email}:`,
+					confirmationResult
+				);
+			}
 		} catch (emailError) {
 			console.error("Failed to send email:", emailError);
 		}
@@ -91,7 +116,23 @@ const updateBookingStatus = async (req, res) => {
 		if (status === "confirmed") {
 			try {
 				const user = await User.findById(booking.user);
-				await emailService.sendBookingStatusUpdate(booking, user);
+				const emailResult = await emailService.sendBookingStatusUpdate(
+					booking,
+					user
+				);
+
+				if (emailResult && emailResult.mailgunRestriction) {
+					console.log(`⚠️ Confirmation email skipped: ${emailResult.reason}`);
+					console.log(
+						`To fix: Add ${user.email} as an authorized recipient in your Mailgun sandbox domain settings`
+					);
+				} else {
+					console.log(
+						`Booking status update email sent to ${user.email}:`,
+						emailResult
+					);
+					console.log(`Email sent at: ${new Date().toISOString()}`);
+				}
 			} catch (emailError) {
 				console.error("Failed to send confirmation email:", emailError);
 			}
@@ -146,7 +187,23 @@ const confirmBooking = async (req, res) => {
 		// Send confirmation email to the user
 		try {
 			const user = await User.findById(booking.user);
-			await emailService.sendBookingStatusUpdate(booking, user);
+			const emailResult = await emailService.sendBookingStatusUpdate(
+				booking,
+				user
+			);
+
+			if (emailResult && emailResult.mailgunRestriction) {
+				console.log(`⚠️ Confirmation email skipped: ${emailResult.reason}`);
+				console.log(
+					`To fix: Add ${user.email} as an authorized recipient in your Mailgun sandbox domain settings`
+				);
+			} else {
+				console.log(
+					`Booking confirmation email sent to ${user.email}:`,
+					emailResult
+				);
+				console.log(`Email sent at: ${new Date().toISOString()}`);
+			}
 		} catch (emailError) {
 			console.error("Failed to send confirmation email:", emailError);
 		}

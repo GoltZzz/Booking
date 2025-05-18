@@ -12,10 +12,43 @@ const mg = isMailgunConfigured
 	  })
 	: null;
 
+// Check if using a sandbox domain
+const isSandboxDomain =
+	process.env.MAILGUN_DOMAIN && process.env.MAILGUN_DOMAIN.includes("sandbox");
+
+// List of authorized recipients for sandbox testing
+// In production, this would be stored in your .env file or database
+const AUTHORIZED_RECIPIENTS = [
+	"humbledog01@gmail.com", // Add your own email here
+	// Add other authorized emails here
+];
+
+/**
+ * Check if recipient is authorized (only needed for sandbox domains)
+ * @param {string} email - Email to check
+ * @returns {boolean} - Whether email is authorized
+ */
+const isAuthorizedRecipient = (email) => {
+	if (!isSandboxDomain) return true; // Only restrict emails on sandbox domains
+	return AUTHORIZED_RECIPIENTS.includes(email);
+};
+
 const sendBookingConfirmation = (booking, user) => {
 	if (!isMailgunConfigured) {
 		console.warn("Mailgun not configured. Skipping email notification.");
-		return Promise.resolve();
+		return Promise.resolve({ skipped: true, reason: "Mailgun not configured" });
+	}
+
+	// Check if recipient is authorized (for sandbox domains)
+	if (!isAuthorizedRecipient(user.email)) {
+		console.warn(
+			`⚠️ Cannot send email to ${user.email} - Not authorized for sandbox domain. Add this email to AUTHORIZED_RECIPIENTS list.`
+		);
+		return Promise.resolve({
+			skipped: true,
+			reason: "Email not authorized for sandbox domain",
+			mailgunRestriction: true,
+		});
 	}
 
 	// Use the direct approach from Sfas project
@@ -39,13 +72,37 @@ const sendBookingConfirmation = (booking, user) => {
     `,
 	};
 
-	return mg.messages().send(data);
+	console.log(`Attempting to send booking confirmation email to ${user.email}`);
+
+	return mg
+		.messages()
+		.send(data)
+		.then((result) => {
+			console.log(`Email sent successfully! Message ID: ${result.id}`);
+			return result;
+		})
+		.catch((error) => {
+			console.error("Error sending confirmation email:", error);
+			throw error;
+		});
 };
 
 const sendNewBookingNotification = (booking, user, adminEmail) => {
 	if (!isMailgunConfigured) {
 		console.warn("Mailgun not configured. Skipping email notification.");
-		return Promise.resolve();
+		return Promise.resolve({ skipped: true, reason: "Mailgun not configured" });
+	}
+
+	// Check if recipient is authorized (for sandbox domains)
+	if (!isAuthorizedRecipient(adminEmail)) {
+		console.warn(
+			`⚠️ Cannot send email to ${adminEmail} - Not authorized for sandbox domain. Add this email to AUTHORIZED_RECIPIENTS list.`
+		);
+		return Promise.resolve({
+			skipped: true,
+			reason: "Email not authorized for sandbox domain",
+			mailgunRestriction: true,
+		});
 	}
 
 	const data = {
@@ -80,13 +137,42 @@ const sendNewBookingNotification = (booking, user, adminEmail) => {
     `,
 	};
 
-	return mg.messages().send(data);
+	console.log(`Attempting to send notification email to admin (${adminEmail})`);
+
+	return mg
+		.messages()
+		.send(data)
+		.then((result) => {
+			console.log(
+				`Admin notification email sent successfully! Message ID: ${result.id}`
+			);
+			return result;
+		})
+		.catch((error) => {
+			console.error("Error sending admin notification email:", error);
+			throw error;
+		});
 };
 
 const sendBookingStatusUpdate = (booking, user) => {
 	if (!isMailgunConfigured) {
 		console.warn("Mailgun not configured. Skipping email notification.");
-		return Promise.resolve();
+		return Promise.resolve({ skipped: true, reason: "Mailgun not configured" });
+	}
+
+	// Check if recipient is authorized (for sandbox domains)
+	if (!isAuthorizedRecipient(user.email)) {
+		console.warn(
+			`⚠️ Cannot send email to ${user.email} - Not authorized for sandbox domain. Add this email to AUTHORIZED_RECIPIENTS list.`
+		);
+		console.warn(
+			`To fix this: Log into Mailgun and add ${user.email} as an authorized recipient for your sandbox domain.`
+		);
+		return Promise.resolve({
+			skipped: true,
+			reason: "Email not authorized for sandbox domain",
+			mailgunRestriction: true,
+		});
 	}
 
 	const data = {
@@ -114,11 +200,33 @@ const sendBookingStatusUpdate = (booking, user) => {
     `,
 	};
 
-	return mg.messages().send(data);
+	console.log(
+		`Attempting to send booking confirmation email to ${user.email} for booking ID: ${booking._id}`
+	);
+	console.log(`Email will be sent from: ${data.from}`);
+
+	return mg
+		.messages()
+		.send(data)
+		.then((result) => {
+			console.log(
+				`✅ Status update email sent successfully! Message ID: ${result.id}`
+			);
+			console.log(`Message details: ${JSON.stringify(result)}`);
+			return result;
+		})
+		.catch((error) => {
+			console.error("❌ Error sending status update email:", error);
+			if (error.details) {
+				console.error("Error details:", error.details);
+			}
+			throw error;
+		});
 };
 
 module.exports = {
 	sendBookingConfirmation,
 	sendNewBookingNotification,
 	sendBookingStatusUpdate,
+	isAuthorizedRecipient, // Export for testing
 };
