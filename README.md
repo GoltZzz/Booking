@@ -1,115 +1,241 @@
-# MJ Studios Photo Booth Booking System
+# Booking System
 
-A full-stack web application for booking photo booth services for events. This system allows users to browse packages, make bookings, and manage their reservations.
-
-## Project Structure
-
-The project is organized into two main parts:
-
-- **Backend**: Express.js API server with MongoDB database
-- **Frontend**: React application built with Vite
+A full-stack booking system with user and admin interfaces, built with React, Express, MongoDB, and Mailgun for email notifications.
 
 ## Features
 
-- User authentication and registration
-- Browse photo booth packages
-- Book a photo booth for an event
-- View and manage bookings
-- Admin dashboard for managing bookings and packages
+### User Booking Flow
 
-## Tech Stack
+- Simple booking form with event type, date, and special request fields
+- Email confirmation when booking is submitted
+- User dashboard showing all bookings with status
 
-### Backend
+### Admin Features
 
-- Node.js
-- Express.js
-- MongoDB with Mongoose
-- JWT for authentication
-- Mailgun for email notifications
+- View all bookings with filtering options
+- Confirm pending bookings with a single click
+- Email notifications to users when booking is confirmed
 
-### Frontend
+### Email Notifications
 
-- React
-- React Router
-- Axios
-- Vite
+- User receives email when booking is submitted
+- Admin receives email when new booking is created
+- User receives email when booking is confirmed
 
-## Getting Started
+## Technical Stack
 
-### Prerequisites
+- **Frontend**: React, React Router, Tailwind CSS
+- **Backend**: Express.js, Node.js
+- **Database**: MongoDB (with Mongoose)
+- **Authentication**: JWT + Session-based authentication
+- **Email Service**: Mailgun
 
-- Node.js (v14 or higher)
-- MongoDB (local or Atlas)
-- npm or yarn
+## Prerequisites
 
-### Installation
+Before setting up this project, make sure you have the following installed:
 
-1. Clone the repository:
+- **Node.js** (v16 or later)
+- **npm** (v8 or later)
+- **Git**
 
-   ```
-   git clone <repository-url>
-   cd Booking
-   ```
+## Detailed Setup Instructions
 
-2. Install dependencies:
+### 1. Clone and Install Dependencies
 
-   ```
-   npm install
-   cd client
-   npm install
-   cd ..
-   ```
+```bash
+# Clone the repository (if you haven't already)
+git clone <repository-url>
+cd Booking
 
-3. Create a `.env` file in the root directory with the following variables:
+# Install backend dependencies
+npm install
 
-   ```
-   PORT=3000
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   MAILGUN_API_KEY=your_mailgun_api_key
-   MAILGUN_DOMAIN=your_mailgun_domain
-   ```
+# Install frontend dependencies
+cd client
+npm install
+cd ..
+```
 
-4. Start the development server:
+### 2. MongoDB Atlas Setup
 
-   ```
-   npm run dev
-   ```
+1. **Create a MongoDB Atlas account**
 
-   This will start both the backend server and the React development server concurrently.
+   - Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+   - Sign up for a free account or log in
 
-## Development
+2. **Create a new cluster**
 
-- Backend API runs on `http://localhost:3000`
-- Frontend development server runs on `http://localhost:5173`
-- API requests from the frontend are proxied to the backend
+   - Click "Build a Database"
+   - Choose the free tier option
+   - Select your preferred cloud provider and region
+   - Click "Create Cluster"
 
-## Deployment
+3. **Set up database access**
 
-For production deployment:
+   - In the left sidebar, click "Database Access"
+   - Click "Add New Database User"
+   - Create a username and password (save these for your .env file)
+   - Set privileges to "Read and write to any database"
+   - Click "Add User"
 
-1. Build the frontend:
+4. **Set up network access**
 
-   ```
-   npm run build
-   ```
+   - In the left sidebar, click "Network Access"
+   - Click "Add IP Address"
+   - Choose "Allow Access from Anywhere" (for development) or add your specific IP
+   - Click "Confirm"
 
-2. Set the NODE_ENV environment variable to 'production':
+5. **Get your connection string**
+   - Once your cluster is created, click "Connect"
+   - Select "Connect your application"
+   - Copy the connection string
+   - Replace `<password>` with your database user's password
+   - Replace `myFirstDatabase` with your preferred database name (e.g., "booking-system")
 
-   ```
-   NODE_ENV=production
-   ```
+### 3. Mailgun Setup
 
-3. Start the server:
-   ```
-   npm start
-   ```
+1. **Create a Mailgun account**
 
-The Express server will serve the React frontend from the `client/dist` directory in production mode.
+   - Go to [Mailgun](https://www.mailgun.com/)
+   - Sign up for a free account
+
+2. **Verify your domain or use sandbox domain**
+
+   - For testing, you can use the provided sandbox domain
+   - For production, add and verify your own domain
+
+3. **Get your API key**
+   - Go to API Keys in your Mailgun dashboard
+   - Copy your Private API key
+
+### 4. Google OAuth Setup (Optional - for Google Login)
+
+1. **Create a Google Cloud Project**
+
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project
+
+2. **Configure OAuth consent screen**
+
+   - Go to "APIs & Services" > "OAuth consent screen"
+   - Select "External" and configure the basic information
+
+3. **Create OAuth credentials**
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth client ID"
+   - Select "Web application" as the application type
+   - Add authorized JavaScript origins: `http://localhost:3000`
+   - Add authorized redirect URIs: `http://localhost:3000/api/auth/google/callback`
+   - Copy your client ID and client secret for your .env file
+
+### 5. Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# MongoDB Connection
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/booking-system?retryWrites=true&w=majority
+
+# JWT Authentication
+JWT_SECRET=generate_a_secure_random_string_here
+SESSION_SECRET=another_secure_random_string_here
+TOKEN_EXPIRY=1d
+
+# Mailgun Configuration
+MAILGUN_API_KEY=your_mailgun_api_key_here
+MAILGUN_DOMAIN=your_mailgun_domain_here
+MAILGUN_FROM_EMAIL=noreply@yourdomain.com
+
+# Google OAuth (Optional)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
+```
+
+For generating secure random strings for JWT_SECRET and SESSION_SECRET, run in your terminal:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+### 6. Running the Application
+
+```bash
+# Start both frontend and backend in development mode
+npm run dev
+
+# Or start them separately
+npm run server    # Start backend only
+npm run client    # Start frontend only
+```
+
+- Backend will run on: http://localhost:3000
+- Frontend will run on: http://localhost:5173
+
+### 7. Building for Production
+
+```bash
+# Build the React frontend
+npm run build
+
+# Start the production server
+npm start
+```
+
+## Troubleshooting
+
+### MongoDB Connection Issues
+
+- Check your IP is whitelisted in Network Access
+- Verify username and password are correct
+- Ensure the connection string format is correct
+
+### Mailgun Issues
+
+- Verify API key is correct
+- For sandbox domains, recipient emails must be verified
+- Check Mailgun dashboard for sending logs
+
+### JWT Authentication Issues
+
+- Ensure JWT_SECRET is set correctly
+- Check that TOKEN_EXPIRY is in a valid format
 
 ## API Endpoints
 
-### Authentication
+### Authentication Endpoints
 
-- `POST /api/users/register` - Register a new user
-- `
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login a user
+- `GET /api/auth/logout` - Logout a user
+- `GET /api/auth/google` - Google OAuth login
+- `GET /api/auth/profile` - Get user profile (authenticated)
+
+### Booking Endpoints
+
+- `POST /api/bookings` - Create a new booking
+- `GET /api/bookings` - Get user's bookings
+- `GET /api/bookings/:id` - Get a specific booking by ID
+- `GET /api/bookings/all` - Get all bookings (admin only)
+- `PUT /api/bookings/:id/confirm` - Confirm a booking (admin only)
+- `PUT /api/bookings/:id/status` - Update booking status (admin only)
+
+## Implementation Details
+
+### Backend
+
+- Mongoose model for bookings (eventType, eventDate, specialRequest)
+- Controller functions for creating, retrieving, and updating bookings
+- Email service integration with Mailgun for notifications
+- Authentication middleware for protecting routes
+
+### Frontend
+
+- User booking form component with validation
+- User booking list component for the dashboard
+- Admin booking management with confirmation functionality
+- Toast notifications for success/error feedback
