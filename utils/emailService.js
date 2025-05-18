@@ -18,10 +18,12 @@ const sendBookingConfirmation = (booking, user) => {
 		return Promise.resolve();
 	}
 
+	// Use the direct approach from Sfas project
 	const data = {
-		from: `Booking System <noreply@${process.env.MAILGUN_DOMAIN}>`,
+		from: user.email, // Set the user's email directly as the sender
 		to: user.email,
 		subject: "Your Booking Request Confirmation",
+		text: `Dear ${user.name}, Thank you for submitting your booking request. We have received your request and it is currently being reviewed.`,
 		html: `
       <h2>Booking Request Confirmation</h2>
       <p>Dear ${user.name},</p>
@@ -47,11 +49,21 @@ const sendNewBookingNotification = (booking, user, adminEmail) => {
 	}
 
 	const data = {
-		from: `Booking System <noreply@${process.env.MAILGUN_DOMAIN}>`,
+		from: user.email, // Set the user's email directly as the sender
 		to: adminEmail,
-		subject: "New Booking Request",
+		subject: `New Booking Request from ${user.name} <${user.email}>`,
+		text: `A new booking request has been submitted by ${user.name}. Email: ${
+			user.email
+		}. Event Type: ${booking.eventType}. Date: ${new Date(
+			booking.eventDate
+		).toLocaleDateString()}. Special Request: ${
+			booking.specialRequest || "None"
+		}.`,
 		html: `
       <h2>New Booking Request</h2>
+      <p style="font-weight: bold; color: #4a5568; font-size: 16px;">From: ${
+				user.name
+			} &lt;${user.email}&gt;</p>
       <p>A new booking request has been submitted.</p>
       <p><strong>Customer Information:</strong></p>
       <ul>
@@ -78,9 +90,14 @@ const sendBookingStatusUpdate = (booking, user) => {
 	}
 
 	const data = {
-		from: `Booking System <noreply@${process.env.MAILGUN_DOMAIN}>`,
+		from: "MJ Studios Booking <booking@mjstudios.com>", // For status updates, use a business email
 		to: user.email,
 		subject: "Your Booking Has Been Confirmed",
+		text: `Dear ${
+			user.name
+		}, We're pleased to inform you that your booking has been confirmed! Event Type: ${
+			booking.eventType
+		}. Date: ${new Date(booking.eventDate).toLocaleDateString()}.`,
 		html: `
       <h2>Booking Confirmation</h2>
       <p>Dear ${user.name},</p>
