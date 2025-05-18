@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { adminApi } from "../../services/api";
 import AdminSidebar from "../../components/AdminSidebar";
@@ -19,6 +19,18 @@ import {
 	FiRefreshCw,
 	FiActivity,
 } from "react-icons/fi";
+
+// API function defined outside component to prevent recreation on each render
+const fetchStats = async () => {
+	const response = await adminApi.getStats();
+	return response.data;
+};
+
+// Static options object to prevent recreations
+const apiOptions = {
+	errorMessage: "Failed to load dashboard data",
+	onError: (err) => console.error(err),
+};
 
 const StatCard = ({ title, value, icon, color, linkTo, linkText }) => (
 	<div className="bg-[#252525] rounded-lg p-5 border border-[#333333] hover:border-[#bb86fc] transition-colors">
@@ -58,6 +70,7 @@ const StatCardSkeleton = () => (
 );
 
 const AdminDashboard = () => {
+	// All useState hooks first to maintain consistent order
 	const [stats, setStats] = useState({
 		userCount: 0,
 		bookingCount: 0,
@@ -67,38 +80,40 @@ const AdminDashboard = () => {
 	const [recentBookings, setRecentBookings] = useState([]);
 	const [recentUsers, setRecentUsers] = useState([]);
 
-	// Use the API call hook
+	// All useRef hooks next
+	const initRef = useRef(false);
+	const isMountedRef = useRef(true);
+
+	// Use the API call hook with stable references
 	const [fetchDashboardData, dashboardData, loading, error, resetFetchState] =
-		useApiCall(
-			async () => {
-				const response = await adminApi.getStats();
-				return response.data;
-			},
-			{
-				errorMessage: "Failed to load dashboard data",
-				onError: (err) => console.error(err),
-			}
-		);
+		useApiCall(fetchStats, apiOptions);
 
 	// Update state when data is received
 	useEffect(() => {
-		if (dashboardData) {
+		if (dashboardData && isMountedRef.current) {
 			setStats(dashboardData.stats);
 			setRecentBookings(dashboardData.recentBookings);
 			setRecentUsers(dashboardData.recentUsers);
+			initRef.current = true;
 		}
 	}, [dashboardData]);
 
-	// Initial data fetch
+	// Initial data fetch - only run once on component mount
 	useEffect(() => {
-		fetchDashboardData();
+		// Reset the mount status on component mount
+		isMountedRef.current = true;
+
+		if (!initRef.current) {
+			fetchDashboardData();
+		}
+
+		// Cleanup function to abort any pending requests
+		return () => {
+			isMountedRef.current = false;
+		};
 	}, [fetchDashboardData]);
 
-	const handleRetry = useCallback(() => {
-		resetFetchState();
-		fetchDashboardData();
-	}, [resetFetchState, fetchDashboardData]);
-
+	// Status color helper function
 	const getStatusColor = (status) => {
 		switch (status) {
 			case "pending":
@@ -113,6 +128,12 @@ const AdminDashboard = () => {
 				return "bg-gray-100 text-gray-800";
 		}
 	};
+
+	// Stable retry handler - must be after all other hooks
+	const handleRetry = useCallback(() => {
+		resetFetchState();
+		fetchDashboardData();
+	}, [resetFetchState, fetchDashboardData]);
 
 	return (
 		<div className="flex h-screen bg-[#121212]">
@@ -131,7 +152,7 @@ const AdminDashboard = () => {
 							<Button
 								variant="primary"
 								size="small"
-								onClick={fetchDashboardData}
+								onClick={handleRetry}
 								loading={loading}
 								disabled={loading}
 								icon={<FiRefreshCw />}>

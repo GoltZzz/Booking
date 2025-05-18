@@ -2,10 +2,8 @@ import { createContext, useState, useEffect, useContext } from "react";
 import { userApi } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
-// Create the context
 const AuthContext = createContext();
 
-// Hook for using the context
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -14,10 +12,8 @@ export const AuthProvider = ({ children }) => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 
-	// Always call hooks at the top level
 	const navigate = useNavigate();
 
-	// Check authentication status on mount
 	useEffect(() => {
 		const checkAuthStatus = async () => {
 			try {
@@ -43,7 +39,6 @@ export const AuthProvider = ({ children }) => {
 		checkAuthStatus();
 	}, []);
 
-	// Login function
 	const login = async (credentials) => {
 		setLoading(true);
 		setError(null);
@@ -73,12 +68,10 @@ export const AuthProvider = ({ children }) => {
 		}
 	};
 
-	// Google login function
 	const googleLogin = () => {
 		window.location.href = "/api/users/auth/google";
 	};
 
-	// Register function
 	const register = async (userData) => {
 		setLoading(true);
 		setError(null);
@@ -108,7 +101,6 @@ export const AuthProvider = ({ children }) => {
 		}
 	};
 
-	// Logout function
 	const logout = async () => {
 		setLoading(true);
 		try {
@@ -128,7 +120,6 @@ export const AuthProvider = ({ children }) => {
 		}
 	};
 
-	// Get user profile
 	const getProfile = async () => {
 		setLoading(true);
 		try {
@@ -163,5 +154,4 @@ export const AuthProvider = ({ children }) => {
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Export the context as named export instead of default
 export { AuthContext };

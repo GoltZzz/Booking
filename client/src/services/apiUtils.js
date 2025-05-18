@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useToast } from "../context/ToastContext";
 
 /**
@@ -88,32 +88,45 @@ export const useApiCall = (apiCall, options = {}) => {
 	const [error, setError] = useState(null);
 	const toast = useToast();
 
+	// Use ref to store options to avoid dependency changes
+	const optionsRef = useRef(options);
+
+	// Keep reference updated without triggering renders
+	useEffect(() => {
+		optionsRef.current = options;
+	}, [options]);
+
 	const execute = useCallback(
 		async (...args) => {
 			setLoading(true);
 			setError(null);
 
+			// Use the current ref value instead of the dependency
+			const currentOptions = optionsRef.current;
+
 			try {
-				if (options.isRegistration || options.isLogin) {
+				if (currentOptions.isRegistration || currentOptions.isLogin) {
 					try {
 						const result = await apiCall(...args);
 
 						if (result && result.success) {
 							setData(result);
-							if (options.showSuccessToast && toast) {
+							if (currentOptions.showSuccessToast && toast) {
 								toast.success(
-									options.successMessage ||
-										`${options.isLogin ? "Login" : "Registration"} successful`
+									currentOptions.successMessage ||
+										`${
+											currentOptions.isLogin ? "Login" : "Registration"
+										} successful`
 								);
 							}
 							return result;
 						} else {
 							const errorMsg =
 								result?.error ||
-								options.errorMessage ||
-								`${options.isLogin ? "Login" : "Registration"} failed`;
+								currentOptions.errorMessage ||
+								`${currentOptions.isLogin ? "Login" : "Registration"} failed`;
 							setError(errorMsg);
-							if (options.showErrorToast && toast) {
+							if (currentOptions.showErrorToast && toast) {
 								toast.error(errorMsg);
 							}
 							return null;
@@ -121,17 +134,17 @@ export const useApiCall = (apiCall, options = {}) => {
 					} catch (err) {
 						const errorMsg =
 							err.response?.data?.error ||
-							options.errorMessage ||
-							`${options.isLogin ? "Login" : "Registration"} failed`;
+							currentOptions.errorMessage ||
+							`${currentOptions.isLogin ? "Login" : "Registration"} failed`;
 						setError(errorMsg);
-						if (options.showErrorToast && toast) {
+						if (currentOptions.showErrorToast && toast) {
 							toast.error(errorMsg);
 						}
 						return null;
 					}
 				} else {
 					const result = await withErrorHandling(() => apiCall(...args), {
-						...options,
+						...currentOptions,
 						toast,
 					});
 
@@ -144,14 +157,17 @@ export const useApiCall = (apiCall, options = {}) => {
 					}
 				}
 			} catch {
-				setError(options.errorMessage || "An unexpected error occurred");
-				toast.error(options.errorMessage || "An unexpected error occurred");
+				setError(currentOptions.errorMessage || "An unexpected error occurred");
+				toast.error(
+					currentOptions.errorMessage || "An unexpected error occurred"
+				);
 				return null;
 			} finally {
 				setLoading(false);
 			}
 		},
-		[apiCall, options, toast]
+		// Only depend on apiCall and toast, not on options
+		[apiCall, toast]
 	);
 
 	const reset = useCallback(() => {
