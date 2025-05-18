@@ -28,7 +28,6 @@ export const withErrorHandling = async (apiCall, options = {}) => {
 			const transformedData = transformResponse(response.data);
 
 			if (showSuccessToast) {
-				// Note: This is used when this function is called from a component with the toast hook
 				if (options.toast) {
 					options.toast.success(successMessage);
 				}
@@ -47,17 +46,14 @@ export const withErrorHandling = async (apiCall, options = {}) => {
 		} catch (err) {
 			attempts++;
 
-			// Get the error message from the API response if available
 			const apiErrorMessage = err.response?.data?.error || errorMessage;
 
-			// Handle retries if configured
 			if (attempts <= retryCount) {
 				await new Promise((resolve) => setTimeout(resolve, retryDelay));
 				return executeCall();
 			}
 
 			if (showErrorToast) {
-				// Note: This is used when this function is called from a component with the toast hook
 				if (options.toast) {
 					options.toast.error(apiErrorMessage);
 				}
@@ -98,16 +94,9 @@ export const useApiCall = (apiCall, options = {}) => {
 			setError(null);
 
 			try {
-				// For auth operations (registration and login), use the result directly
 				if (options.isRegistration || options.isLogin) {
 					try {
 						const result = await apiCall(...args);
-						console.log(
-							`apiUtils: ${
-								options.isLogin ? "Login" : "Registration"
-							} direct result:`,
-							result
-						);
 
 						if (result && result.success) {
 							setData(result);
@@ -130,10 +119,6 @@ export const useApiCall = (apiCall, options = {}) => {
 							return null;
 						}
 					} catch (err) {
-						console.error(
-							`apiUtils: ${options.isLogin ? "Login" : "Registration"} error:`,
-							err
-						);
 						const errorMsg =
 							err.response?.data?.error ||
 							options.errorMessage ||
@@ -145,7 +130,6 @@ export const useApiCall = (apiCall, options = {}) => {
 						return null;
 					}
 				} else {
-					// For non-auth requests, use the normal error handling
 					const result = await withErrorHandling(() => apiCall(...args), {
 						...options,
 						toast,
@@ -159,8 +143,7 @@ export const useApiCall = (apiCall, options = {}) => {
 						return null;
 					}
 				}
-			} catch (error) {
-				console.error("Unexpected API error:", error);
+			} catch {
 				setError(options.errorMessage || "An unexpected error occurred");
 				toast.error(options.errorMessage || "An unexpected error occurred");
 				return null;
@@ -213,7 +196,6 @@ export const rateLimiter = (limit, interval) => {
 	return async (fn) => {
 		const now = Date.now();
 
-		// Clear old calls outside the interval
 		while (calls.length > 0 && calls[0] < now - interval) {
 			calls.shift();
 		}
@@ -239,19 +221,15 @@ export const rateLimiter = (limit, interval) => {
 export const getErrorMessage = (error) => {
 	if (!error) return "An unknown error occurred";
 
-	// Error from axios
 	if (error.response) {
-		// The server responded with a status code outside the 2xx range
 		return (
 			error.response.data?.error ||
 			error.response.data?.message ||
 			`Error: ${error.response.status}`
 		);
 	} else if (error.request) {
-		// The request was made but no response was received
 		return "Network error. Please check your internet connection.";
 	} else {
-		// Something happened in setting up the request that triggered an Error
 		return error.message || "An unexpected error occurred";
 	}
 };

@@ -24,32 +24,27 @@ const LoginModal = ({ isOpen, onClose }) => {
 		password: "",
 	});
 	const [errors, setErrors] = useState({});
-	const [loginStatus, setLoginStatus] = useState("idle"); // idle, loading, success, error
+	const [loginStatus, setLoginStatus] = useState("idle");
 	const { login, googleLogin } = useAuth();
 	const toast = useToast();
 	const navigate = useNavigate();
 
-	// Use API call hook for login
 	const [executeLogin, , loginLoading, loginError, resetLoginState] =
 		useApiCall(
 			async (credentials) => {
-				// Call login and log the result for debugging
 				const result = await login(credentials);
-				console.log("Direct result from login:", result);
-				return result; // Return the entire result object
+				return result;
 			},
 			{
 				errorMessage:
 					"Login failed. Please check your credentials and try again.",
 				successMessage: "Login successful!",
 				showSuccessToast: true,
-				isLogin: true, // Add this flag for special handling
+				isLogin: true,
 			}
 		);
 
-	// Reset the modal state when it opens or closes
 	useEffect(() => {
-		// When the modal is opened, reset all form fields and states
 		if (isOpen) {
 			setFormData({
 				email: "",
@@ -68,7 +63,6 @@ const LoginModal = ({ isOpen, onClose }) => {
 			[name]: value,
 		}));
 
-		// Clear error when user starts typing
 		if (errors[name]) {
 			setErrors((prev) => ({
 				...prev,
@@ -80,14 +74,12 @@ const LoginModal = ({ isOpen, onClose }) => {
 	const validateForm = () => {
 		const newErrors = {};
 
-		// Email validation
 		if (!formData.email) {
 			newErrors.email = "Email is required";
 		} else if (!/\S+@\S+\.\S+/.test(formData.email)) {
 			newErrors.email = "Email is invalid";
 		}
 
-		// Password validation
 		if (!formData.password) {
 			newErrors.password = "Password is required";
 		}
@@ -107,31 +99,24 @@ const LoginModal = ({ isOpen, onClose }) => {
 		setLoginStatus("loading");
 
 		try {
-			console.log("LoginModal - Sending login data:", formData);
-
-			// Execute login
 			const result = await executeLogin(formData);
 
-			console.log("LoginModal - Login result:", result);
-
-			// Consider login successful if the result has a success property that is true
 			if (result && result.success === true) {
-				console.log("LoginModal - Login successful");
 				setLoginStatus("success");
 
-				// Show success briefly before closing modal
 				setTimeout(() => {
-					onClose(); // Close the modal
-					// Always redirect to landing page regardless of admin status
-					navigate("/");
+					setLoginStatus("redirecting");
+
+					setTimeout(() => {
+						onClose();
+						navigate("/");
+					}, 1500);
 				}, 1000);
 			} else {
-				console.log("LoginModal - Login failed with result:", result);
 				setErrors({ general: loginError || "Login failed" });
 				setLoginStatus("error");
 			}
-		} catch (error) {
-			console.error("LoginModal - Unexpected error:", error);
+		} catch {
 			setErrors({ general: "An unexpected error occurred. Please try again." });
 			setLoginStatus("error");
 		}
@@ -144,13 +129,15 @@ const LoginModal = ({ isOpen, onClose }) => {
 	}, [resetLoginState]);
 
 	const handleGoogleLogin = () => {
-		onClose(); // Close the modal before redirecting
+		onClose();
 		googleLogin();
-		// Note: Google redirect will be handled by the GoogleAuthSuccess component
 	};
 
 	const isDisabled =
-		loginStatus === "loading" || loginStatus === "success" || loginLoading;
+		loginStatus === "loading" ||
+		loginStatus === "success" ||
+		loginStatus === "redirecting" ||
+		loginLoading;
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} title="Welcome Back">
@@ -164,86 +151,91 @@ const LoginModal = ({ isOpen, onClose }) => {
 					message="Signing you in..."
 					transparent
 					blur>
-					{errors.general && (
-						<div className="mb-4">
-							<ErrorMessage
-								message={errors.general}
-								type="error"
-								action={{
-									label: "Try Again",
-									onClick: handleRetry,
-									icon: <FiRefreshCw size={14} />,
-								}}
+					<LoadingOverlay
+						isLoading={loginStatus === "redirecting"}
+						message="Welcome back! Taking you to our homepage..."
+						transparent
+						blur>
+						{errors.general && (
+							<div className="mb-4">
+								<ErrorMessage
+									message={errors.general}
+									type="error"
+									action={{
+										label: "Try Again",
+										onClick: handleRetry,
+										icon: <FiRefreshCw size={14} />,
+									}}
+								/>
+							</div>
+						)}
+
+						<form onSubmit={handleSubmit} className="space-y-4" noValidate>
+							<FormInput
+								id="modal-email"
+								label="Email Address"
+								type="email"
+								name="email"
+								value={formData.email}
+								onChange={handleChange}
+								required
+								error={errors.email}
+								autoComplete="email"
+								disabled={isDisabled}
+								icon={<FiMail size={18} />}
+								placeholder="your.email@example.com"
 							/>
-						</div>
-					)}
 
-					<form onSubmit={handleSubmit} className="space-y-4" noValidate>
-						<FormInput
-							id="modal-email"
-							label="Email Address"
-							type="email"
-							name="email"
-							value={formData.email}
-							onChange={handleChange}
-							required
-							error={errors.email}
-							autoComplete="email"
-							disabled={isDisabled}
-							icon={<FiMail size={18} />}
-							placeholder="your.email@example.com"
-						/>
+							<FormInput
+								id="modal-password"
+								label="Password"
+								type="password"
+								name="password"
+								value={formData.password}
+								onChange={handleChange}
+								required
+								error={errors.password}
+								autoComplete="current-password"
+								disabled={isDisabled}
+								icon={<FiLock size={18} />}
+								placeholder="Enter your password"
+							/>
 
-						<FormInput
-							id="modal-password"
-							label="Password"
-							type="password"
-							name="password"
-							value={formData.password}
-							onChange={handleChange}
-							required
-							error={errors.password}
-							autoComplete="current-password"
-							disabled={isDisabled}
-							icon={<FiLock size={18} />}
-							placeholder="Enter your password"
-						/>
+							<div className="flex justify-end mb-2">
+								<button
+									type="button"
+									className="text-sm text-[#bb86fc] hover:underline"
+									onClick={() => {
+										toast.info("Password reset functionality coming soon!");
+									}}>
+									Forgot Password?
+								</button>
+							</div>
 
-						<div className="flex justify-end mb-2">
-							<button
-								type="button"
-								className="text-sm text-[#bb86fc] hover:underline"
-								onClick={() => {
-									// Handle forgot password (can be implemented later)
-									toast.info("Password reset functionality coming soon!");
-								}}>
-								Forgot Password?
-							</button>
+							<Button
+								type="submit"
+								fullWidth
+								loading={loginStatus === "loading"}
+								disabled={isDisabled}
+								className="mt-4">
+								{loginStatus === "success" ? "Success!" : "Sign In"}
+							</Button>
+						</form>
+
+						<div className="auth-divider">
+							<span>OR</span>
 						</div>
 
 						<Button
-							type="submit"
+							onClick={handleGoogleLogin}
+							variant="outline"
 							fullWidth
-							loading={loginStatus === "loading"}
 							disabled={isDisabled}
-							className="mt-4">
-							{loginStatus === "success" ? "Success!" : "Sign In"}
+							icon={<img src={googleLogo} alt="" className="w-5 h-5" />}
+							className="google-btn">
+							Sign in with Google
 						</Button>
-					</form>
-
-					<div className="auth-divider">
-						<span>OR</span>
-					</div>
-
-					<Button
-						onClick={handleGoogleLogin}
-						variant="outline"
-						fullWidth
-						disabled={isDisabled}
-						icon={<img src={googleLogo} alt="" className="w-5 h-5" />}
-						className="google-btn">
-						Sign in with Google
-					</Button>
+					</LoadingOverlay>
 				</LoadingOverlay>
 			</ErrorBoundary>
 		</Modal>

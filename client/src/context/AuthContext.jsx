@@ -48,34 +48,21 @@ export const AuthProvider = ({ children }) => {
 		setLoading(true);
 		setError(null);
 		try {
-			console.log("Login with credentials:", credentials);
 			const response = await userApi.login(credentials);
-			console.log("Login response:", response.data);
-			console.log("Response status:", response.status);
-			console.log("isAuthenticated value:", response.data.isAuthenticated);
-			console.log("Full response object:", response);
 
 			if (response.data.isAuthenticated) {
-				console.log(
-					"Authentication successful, setting user:",
-					response.data.user
-				);
 				setUser(response.data.user);
 				setIsAuthenticated(true);
-				// Return the response data with success flag to ensure the modal gets the right info
 				return {
 					success: true,
 					user: response.data.user,
 					message: response.data.message || "Login successful",
 				};
 			} else {
-				console.log("Login unsuccessful");
 				throw new Error("Login failed");
 			}
 		} catch (err) {
-			console.error("Login error:", err);
 			const errorMessage = err.response?.data?.error || "Login failed";
-			console.error("Error message being set:", errorMessage);
 			setError(errorMessage);
 			return {
 				success: false,
@@ -96,36 +83,21 @@ export const AuthProvider = ({ children }) => {
 		setLoading(true);
 		setError(null);
 		try {
-			console.log("Registering with data:", userData);
 			const response = await userApi.register(userData);
-			console.log("Registration response:", response.data);
-			console.log("Response status:", response.status);
-			console.log("isAuthenticated value:", response.data.isAuthenticated);
-			console.log("Full response object:", response);
 
-			// If we get a successful response (201 Created), consider it successful
-			// regardless of the isAuthenticated field
 			if (response.status === 201 || response.data.isAuthenticated) {
-				console.log(
-					"Authentication successful, setting user:",
-					response.data.user
-				);
 				setUser(response.data.user);
 				setIsAuthenticated(true);
-				// Return the response data with success flag to ensure the modal gets the right info
 				return {
 					success: true,
 					user: response.data.user,
 					message: response.data.message || "Registration successful",
 				};
 			} else {
-				console.log("Registration unsuccessful");
 				throw new Error("Registration failed");
 			}
 		} catch (err) {
-			console.error("Registration error:", err);
 			const errorMessage = err.response?.data?.error || "Registration failed";
-			console.error("Error message being set:", errorMessage);
 			setError(errorMessage);
 			return {
 				success: false,
@@ -143,7 +115,7 @@ export const AuthProvider = ({ children }) => {
 			await userApi.logout();
 			setUser(null);
 			setIsAuthenticated(false);
-			navigate("/"); // Navigate to home page after logout
+			navigate("/");
 			return { success: true };
 		} catch (err) {
 			setError(err.response?.data?.error || "Logout failed");

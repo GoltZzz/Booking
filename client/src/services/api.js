@@ -11,15 +11,9 @@ const api = axios.create({
 // Add request interceptor for logging
 api.interceptors.request.use(
 	(config) => {
-		console.log("API Request:", {
-			method: config.method,
-			url: config.url,
-			data: config.data,
-		});
 		return config;
 	},
 	(error) => {
-		console.error("API Request Error:", error);
 		return Promise.reject(error);
 	}
 );
@@ -27,20 +21,9 @@ api.interceptors.request.use(
 // Add a response interceptor to handle token expiration and logging
 api.interceptors.response.use(
 	(response) => {
-		console.log("API Response:", {
-			status: response.status,
-			url: response.config.url,
-			data: response.data,
-		});
 		return response;
 	},
 	async (error) => {
-		console.error("API Response Error:", {
-			status: error.response?.status,
-			url: error.config?.url,
-			data: error.response?.data,
-		});
-
 		const originalRequest = error.config;
 
 		// If the error is 401 and we haven't already tried to refresh
