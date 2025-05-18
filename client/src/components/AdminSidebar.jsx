@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "./Button";
+import LogoutButton from "./LogoutButton";
 import {
 	FiHome,
 	FiUsers,
@@ -14,7 +15,7 @@ import {
 
 const AdminSidebar = () => {
 	const location = useLocation();
-	const { user, logout } = useAuth();
+	const { user } = useAuth();
 
 	const isActive = (path) => {
 		return location.pathname === path;
@@ -85,14 +86,10 @@ const AdminSidebar = () => {
 					icon={<FiEye />}>
 					View Site
 				</Button>
-				<Button
-					variant="danger"
-					size="small"
-					fullWidth
-					onClick={logout}
-					icon={<FiLogOut />}>
+				<LogoutButton className="w-full px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded flex items-center justify-center transition-colors">
+					<FiLogOut className="mr-2" />
 					Logout
-				</Button>
+				</LogoutButton>
 			</div>
 		</div>
 	);

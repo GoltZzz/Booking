@@ -34,6 +34,12 @@ const Register = () => {
 			return;
 		}
 
+		// Validate password length
+		if (formData.password.length < 6) {
+			setError("Password must be at least 6 characters");
+			return;
+		}
+
 		// Create a new object with only the fields needed for registration
 		const registerData = {
 			name: formData.name,
@@ -42,11 +48,16 @@ const Register = () => {
 			phone: formData.phone,
 		};
 
+		console.log("Sending registration data:", registerData);
+
 		const result = await register(registerData);
+		console.log("Register function returned:", result);
 
 		if (result.success) {
+			console.log("Registration successful, navigating to home");
 			navigate("/");
 		} else {
+			console.log("Registration failed with error:", result.error);
 			setError(result.error);
 		}
 	};

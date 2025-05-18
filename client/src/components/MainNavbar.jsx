@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiUser, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import { FiUser, FiMenu, FiX } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import SignupModal from "./SignupModal";
 import LoginModal from "./LoginModal";
+import LogoutButton from "./LogoutButton";
 import LogoImage from "../assets/images/Logo.jpg";
 
 const MainNavbar = () => {
 	const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 	const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-	const { isAuthenticated, user, logout } = useAuth();
+	const { isAuthenticated, user } = useAuth();
 	const navigate = useNavigate();
 
 	const openSignupModal = () => {
@@ -31,11 +32,6 @@ const MainNavbar = () => {
 
 	const closeLoginModal = () => {
 		setIsLoginModalOpen(false);
-	};
-
-	const handleLogout = async () => {
-		await logout();
-		setMobileMenuOpen(false);
 	};
 
 	const handleAdminPortal = () => {
@@ -90,12 +86,7 @@ const MainNavbar = () => {
 									</button>
 								)}
 
-								<button
-									onClick={handleLogout}
-									className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors">
-									<FiLogOut className="inline mr-1" />
-									Logout
-								</button>
+								<LogoutButton className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors" />
 							</>
 						) : (
 							<>
@@ -160,12 +151,10 @@ const MainNavbar = () => {
 										</button>
 									)}
 
-									<button
-										onClick={handleLogout}
-										className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors py-2 text-left">
-										<FiLogOut className="inline mr-1" />
-										Logout
-									</button>
+									<LogoutButton
+										className="font-medium text-gray-300 hover:text-[#bb86fc] transition-colors py-2 text-left"
+										onLogoutComplete={() => setMobileMenuOpen(false)}
+									/>
 								</>
 							) : (
 								<>

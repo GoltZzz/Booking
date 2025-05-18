@@ -3,12 +3,13 @@ import { useState, useEffect } from "react";
 import "../styles/Navbar.css";
 import SignupModal from "./SignupModal";
 import LoginModal from "./LoginModal";
+import LogoutButton from "./LogoutButton";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
 	const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 	const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-	const { isAuthenticated, logout, user, getProfile } = useAuth();
+	const { isAuthenticated, user, getProfile } = useAuth();
 	const [isAdmin, setIsAdmin] = useState(false);
 
 	// Direct console log outside of useEffect to ensure it runs on every render
@@ -97,10 +98,6 @@ const Navbar = () => {
 		setIsLoginModalOpen(false);
 	};
 
-	const handleLogout = async () => {
-		await logout();
-	};
-
 	// Force admin check from user object as a backup
 	const adminStatus = isAdmin || (user && user.isAdmin);
 
@@ -132,9 +129,7 @@ const Navbar = () => {
 										Admin Portal
 									</Link>
 								)}
-								<button className="nav-item logout-btn" onClick={handleLogout}>
-									Logout
-								</button>
+								<LogoutButton className="nav-item logout-btn" />
 							</>
 						) : (
 							<>

@@ -19,16 +19,36 @@ const refreshCookieOptions = {
 
 const register = async (req, res) => {
 	try {
+		console.log("Register endpoint called with body:", req.body);
 		const { name, email, password, phone } = req.body;
+
+		// Validation checks
+		if (!name || !email || !password) {
+			console.log("Missing required fields:", {
+				name: !name,
+				email: !email,
+				password: !password,
+			});
+			return res.status(400).json({
+				error: "Missing required fields",
+				missing: {
+					name: !name,
+					email: !email,
+					password: !password,
+				},
+			});
+		}
 
 		const existingUser = await User.findOne({ email });
 		if (existingUser) {
+			console.log("Email already in use:", email);
 			return res.status(400).json({ error: "Email already in use" });
 		}
 
 		// Check if this is the first user being registered
 		const userCount = await User.countDocuments();
 		const isFirstUser = userCount === 0;
+		console.log("Is first user:", isFirstUser);
 
 		const user = new User({
 			name,
@@ -40,6 +60,7 @@ const register = async (req, res) => {
 		});
 
 		await user.save();
+		console.log("User saved to database with ID:", user._id);
 
 		// Generate tokens
 		const { token: accessToken, expiresAt: accessTokenExpiry } =
@@ -50,14 +71,16 @@ const register = async (req, res) => {
 		// Set tokens in HTTP-only cookies
 		res.cookie("accessToken", accessToken, cookieOptions);
 		res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+		console.log("Cookies set for user");
 
 		// Log the user in with Passport
 		req.login(user, (err) => {
 			if (err) {
+				console.error("Passport login error:", err);
 				return res.status(500).json({ error: err.message });
 			}
 
-			res.status(201).json({
+			const responseData = {
 				message: "User registered successfully",
 				user: {
 					id: user._id,
@@ -69,9 +92,13 @@ const register = async (req, res) => {
 				},
 				tokenExpiry: accessTokenExpiry,
 				isAuthenticated: true,
-			});
+			};
+
+			console.log("Sending successful registration response:", responseData);
+			res.status(201).json(responseData);
 		});
 	} catch (error) {
+		console.error("Registration error:", error);
 		res.status(500).json({ error: error.message });
 	}
 };

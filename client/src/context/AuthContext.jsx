@@ -48,21 +48,38 @@ export const AuthProvider = ({ children }) => {
 		setLoading(true);
 		setError(null);
 		try {
+			console.log("Login with credentials:", credentials);
 			const response = await userApi.login(credentials);
-			const { user, isAuthenticated } = response.data;
+			console.log("Login response:", response.data);
+			console.log("Response status:", response.status);
+			console.log("isAuthenticated value:", response.data.isAuthenticated);
+			console.log("Full response object:", response);
 
-			if (isAuthenticated) {
-				setUser(user);
+			if (response.data.isAuthenticated) {
+				console.log(
+					"Authentication successful, setting user:",
+					response.data.user
+				);
+				setUser(response.data.user);
 				setIsAuthenticated(true);
-				return { success: true, user };
+				// Return the response data with success flag to ensure the modal gets the right info
+				return {
+					success: true,
+					user: response.data.user,
+					message: response.data.message || "Login successful",
+				};
 			} else {
+				console.log("Login unsuccessful");
 				throw new Error("Login failed");
 			}
 		} catch (err) {
-			setError(err.response?.data?.error || "Login failed");
+			console.error("Login error:", err);
+			const errorMessage = err.response?.data?.error || "Login failed";
+			console.error("Error message being set:", errorMessage);
+			setError(errorMessage);
 			return {
 				success: false,
-				error: err.response?.data?.error || "Login failed",
+				error: errorMessage,
 			};
 		} finally {
 			setLoading(false);
@@ -79,21 +96,40 @@ export const AuthProvider = ({ children }) => {
 		setLoading(true);
 		setError(null);
 		try {
+			console.log("Registering with data:", userData);
 			const response = await userApi.register(userData);
-			const { user, isAuthenticated } = response.data;
+			console.log("Registration response:", response.data);
+			console.log("Response status:", response.status);
+			console.log("isAuthenticated value:", response.data.isAuthenticated);
+			console.log("Full response object:", response);
 
-			if (isAuthenticated) {
-				setUser(user);
+			// If we get a successful response (201 Created), consider it successful
+			// regardless of the isAuthenticated field
+			if (response.status === 201 || response.data.isAuthenticated) {
+				console.log(
+					"Authentication successful, setting user:",
+					response.data.user
+				);
+				setUser(response.data.user);
 				setIsAuthenticated(true);
-				return { success: true, user };
+				// Return the response data with success flag to ensure the modal gets the right info
+				return {
+					success: true,
+					user: response.data.user,
+					message: response.data.message || "Registration successful",
+				};
 			} else {
+				console.log("Registration unsuccessful");
 				throw new Error("Registration failed");
 			}
 		} catch (err) {
-			setError(err.response?.data?.error || "Registration failed");
+			console.error("Registration error:", err);
+			const errorMessage = err.response?.data?.error || "Registration failed";
+			console.error("Error message being set:", errorMessage);
+			setError(errorMessage);
 			return {
 				success: false,
-				error: err.response?.data?.error || "Registration failed",
+				error: errorMessage,
 			};
 		} finally {
 			setLoading(false);

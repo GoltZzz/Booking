@@ -3,17 +3,27 @@ import { useNavigate } from "react-router-dom";
 import { packageApi, bookingApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SkeletonLoader from "../components/SkeletonLoader";
+import LoadingOverlay from "../components/LoadingOverlay";
 import ErrorMessage from "../components/ErrorMessage";
+import ErrorBoundary from "../components/ErrorBoundary";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
-import { FiCalendar, FiClock, FiMapPin, FiPackage } from "react-icons/fi";
+import {
+	FiCalendar,
+	FiClock,
+	FiMapPin,
+	FiPackage,
+	FiRefreshCw,
+	FiAlertTriangle,
+} from "react-icons/fi";
+import { useApiCall, getErrorMessage } from "../services/apiUtils";
 import "../styles/Booking.css";
 
 const Booking = () => {
 	const [packages, setPackages] = useState([]);
 	const [selectedPackage, setSelectedPackage] = useState(null);
-	const [loading, setLoading] = useState(true);
-	const [submitting, setSubmitting] = useState(false);
+	const [loadingPackages, setLoadingPackages] = useState(true);
 	const [error, setError] = useState("");
 	const [formData, setFormData] = useState({
 		eventType: "",
@@ -25,24 +35,53 @@ const Booking = () => {
 	});
 	const [formErrors, setFormErrors] = useState({});
 	const navigate = useNavigate();
-	const { showToast } = useToast();
+	const toast = useToast();
+
+	// Use the new API call hook for submission
+	const [
+		submitBooking,
+		bookingResult,
+		submitting,
+		submissionError,
+		resetSubmission,
+	] = useApiCall(bookingApi.createBooking, {
+		errorMessage:
+			"Failed to create booking. Please check your information and try again.",
+		showSuccessToast: true,
+		successMessage: "Booking confirmed successfully!",
+	});
+
+	const fetchPackages = async () => {
+		setLoadingPackages(true);
+		setError("");
+
+		try {
+			const response = await packageApi.getPackages();
+			setPackages(response.data);
+			setError("");
+		} catch (err) {
+			console.error("Error fetching packages:", err);
+			setError(
+				getErrorMessage(err) || "Failed to load packages. Please try again."
+			);
+			toast.error("Failed to load packages", "error");
+		} finally {
+			setLoadingPackages(false);
+		}
+	};
 
 	useEffect(() => {
-		const fetchPackages = async () => {
-			try {
-				const response = await packageApi.getPackages();
-				setPackages(response.data);
-				setLoading(false);
-			} catch (err) {
-				console.error("Error fetching packages:", err);
-				setError("Failed to load packages. Please try again later.");
-				setLoading(false);
-				showToast("Failed to load packages", "error");
-			}
-		};
-
 		fetchPackages();
-	}, [showToast]);
+	}, []);
+
+	// If booking was successful, navigate to dashboard
+	useEffect(() => {
+		if (bookingResult) {
+			setTimeout(() => {
+				navigate("/dashboard");
+			}, 1500);
+		}
+	}, [bookingResult, navigate]);
 
 	const handlePackageSelect = (pkg) => {
 		setSelectedPackage(pkg);
@@ -125,262 +164,362 @@ const Booking = () => {
 			return;
 		}
 
-		setSubmitting(true);
-		setError("");
+		// Reset any previous submission errors
+		resetSubmission();
 
-		try {
-			const bookingData = {
-				bookingDate: formData.date,
-				startTime: formData.startTime,
-				endTime: formData.endTime,
-				duration: selectedPackage.duration,
-				category: formData.eventType,
-				packageType: selectedPackage.name,
-				specialRequests: formData.additionalNotes,
-				location: formData.location,
-			};
+		const bookingData = {
+			bookingDate: formData.date,
+			startTime: formData.startTime,
+			endTime: formData.endTime,
+			duration: selectedPackage.duration,
+			category: formData.eventType,
+			packageType: selectedPackage.name,
+			specialRequests: formData.additionalNotes,
+			location: formData.location,
+		};
 
-			await bookingApi.createBooking(bookingData);
-			showToast("Booking confirmed successfully!", "success");
-			navigate("/dashboard");
-		} catch (err) {
-			console.error("Error creating booking:", err);
-			const errorMessage =
-				err.response?.data?.message ||
-				"Failed to create booking. Please try again.";
-			setError(errorMessage);
-			showToast(errorMessage, "error");
-		} finally {
-			setSubmitting(false);
-		}
+		// Use the API call hook to handle submission with proper error handling
+		await submitBooking(bookingData);
 	};
 
-	if (loading) {
+	// Render the package options with skeleton loaders during loading
+	const renderPackageOptions = () => {
+		if (loadingPackages) {
+			return Array(3)
+				.fill(0)
+				.map((_, index) => (
+					<div key={index} className="mb-4">
+						<SkeletonLoader type="card" height="250px" />
+					</div>
+				));
+		}
+
+		if (packages.length === 0 && !error) {
+			return (
+				<div className="text-center p-8 bg-[#1e1e1e] rounded-lg border border-[#333333]">
+					<FiPackage size={48} className="mx-auto mb-4 text-gray-500" />
+					<p className="text-gray-400">No packages available at the moment.</p>
+				</div>
+			);
+		}
+
+		return packages.map((pkg) => (
+			<div
+				key={pkg._id}
+				className={`package-option bg-[#1e1e1e] border ${
+					selectedPackage?._id === pkg._id
+						? "border-[#bb86fc]"
+						: "border-[#333333]"
+				} rounded-lg p-4 cursor-pointer transition-all hover:border-[#bb86fc] hover:transform hover:-translate-y-1`}
+				onClick={() => handlePackageSelect(pkg)}
+				role="radio"
+				aria-checked={selectedPackage?._id === pkg._id}
+				tabIndex={0}
+				onKeyPress={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						handlePackageSelect(pkg);
+					}
+				}}>
+				<h3 className="text-lg font-semibold">{pkg.name}</h3>
+				<p className="text-[#bb86fc] text-xl font-bold mt-2">₱{pkg.price}</p>
+				<p className="text-gray-400 flex items-center mt-1">
+					<FiClock className="mr-1" /> {pkg.duration} hours
+				</p>
+				<ul className="features mt-3 space-y-1">
+					{pkg.features.map((feature, index) => (
+						<li key={index} className="text-sm text-gray-300 flex items-start">
+							<span className="text-[#bb86fc] mr-2">✓</span> {feature}
+						</li>
+					))}
+				</ul>
+			</div>
+		));
+	};
+
+	// Render error state with retry option
+	const renderError = () => {
+		if (!error) return null;
+
 		return (
-			<div className="flex justify-center items-center min-h-screen bg-[#121212] text-[#e0e0e0]">
-				<LoadingSpinner size="large" text="Loading packages..." />
+			<div className="bg-[#1e1e1e] rounded-lg p-6 border border-[#333333] mb-6">
+				<div className="flex items-center text-[#ff5252] mb-3">
+					<FiAlertTriangle size={24} className="mr-2" />
+					<h3 className="text-lg font-semibold">Error Loading Packages</h3>
+				</div>
+				<p className="text-gray-300 mb-4">{error}</p>
+				<Button
+					onClick={fetchPackages}
+					variant="primary"
+					size="small"
+					icon={<FiRefreshCw />}>
+					Try Again
+				</Button>
 			</div>
 		);
-	}
+	};
 
 	return (
-		<div className="booking-page bg-[#121212] text-[#e0e0e0] min-h-screen py-8 px-4">
-			<div className="container mx-auto max-w-6xl">
-				<h1 className="text-3xl font-bold mb-6 text-center">
-					Book a Photo Session
-				</h1>
+		<ErrorBoundary>
+			<LoadingOverlay
+				isLoading={submitting}
+				message="Submitting your booking..."
+				spinnerSize="large"
+				fullPage
+				blur
+				transparent>
+				<div className="booking-page bg-[#121212] text-[#e0e0e0] min-h-screen py-8 px-4">
+					<div className="container mx-auto max-w-6xl">
+						<h1 className="text-3xl font-bold mb-6 text-center">
+							Book a Photo Session
+						</h1>
 
-				{error && (
-					<div className="mb-6">
-						<ErrorMessage message={error} type="error" />
-					</div>
-				)}
-
-				<div className="booking-container grid grid-cols-1 lg:grid-cols-3 gap-8">
-					<div className="package-selection lg:col-span-1">
-						<h2 className="text-xl font-semibold mb-4">Select a Package</h2>
-						<div className="package-options space-y-4">
-							{packages.map((pkg) => (
-								<div
-									key={pkg._id}
-									className={`package-option bg-[#1e1e1e] border ${
-										selectedPackage?._id === pkg._id
-											? "border-[#bb86fc]"
-											: "border-[#333333]"
-									} rounded-lg p-4 cursor-pointer transition-all hover:border-[#bb86fc] hover:transform hover:-translate-y-1`}
-									onClick={() => handlePackageSelect(pkg)}
-									role="radio"
-									aria-checked={selectedPackage?._id === pkg._id}
-									tabIndex={0}
-									onKeyPress={(e) => {
-										if (e.key === "Enter" || e.key === " ") {
-											handlePackageSelect(pkg);
-										}
-									}}>
-									<h3 className="text-lg font-semibold">{pkg.name}</h3>
-									<p className="text-[#bb86fc] text-xl font-bold mt-2">
-										₱{pkg.price}
-									</p>
-									<p className="text-gray-400 flex items-center mt-1">
-										<FiClock className="mr-1" /> {pkg.duration} hours
-									</p>
-									<ul className="features mt-3 space-y-1">
-										{pkg.features.map((feature, index) => (
-											<li
-												key={index}
-												className="text-sm text-gray-300 flex items-start">
-												<span className="text-[#bb86fc] mr-2">✓</span> {feature}
-											</li>
-										))}
-									</ul>
-								</div>
-							))}
-						</div>
-						{formErrors.package && (
+						{renderError()}
+						{submissionError && (
 							<ErrorMessage
-								message={formErrors.package}
+								message={submissionError}
 								type="error"
-								className="mt-2"
+								className="mb-6"
+								dismissable
+								onDismiss={resetSubmission}
 							/>
 						)}
-					</div>
 
-					<div className="booking-form-container lg:col-span-2">
-						<h2 className="text-xl font-semibold mb-4">Event Details</h2>
-						<form
-							onSubmit={handleSubmit}
-							className="booking-form bg-[#1e1e1e] rounded-lg p-6 border border-[#333333]">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div>
-									<label
-										htmlFor="eventType"
-										className="block text-sm font-medium mb-1 text-gray-300">
-										Event Type <span className="text-[#ff5252]">*</span>
-									</label>
-									<select
-										id="eventType"
-										name="eventType"
-										value={formData.eventType}
-										onChange={handleChange}
-										required
-										className={`w-full px-3 py-2 rounded-md bg-[#121212] border ${
-											formErrors.eventType
-												? "border-[#ff5252]"
-												: "border-[#333333]"
-										} focus:outline-none focus:ring-2 focus:ring-[#bb86fc] focus:ring-opacity-20`}
-										aria-invalid={!!formErrors.eventType}
-										aria-describedby={
-											formErrors.eventType ? "eventType-error" : undefined
-										}>
-										<option value="">Select Event Type</option>
-										<option value="Birthday">Birthday</option>
-										<option value="Wedding pre-nup">Wedding pre-nup</option>
-										<option value="Debut photoshoot">Debut photoshoot</option>
-										<option value="Maternity">Maternity</option>
-									</select>
-									{formErrors.eventType && (
-										<div
-											id="eventType-error"
-											className="text-[#ff5252] text-xs mt-1">
-											{formErrors.eventType}
+						<div className="booking-container grid grid-cols-1 lg:grid-cols-3 gap-8">
+							<div className="package-selection lg:col-span-1">
+								<h2 className="text-xl font-semibold mb-4">Select a Package</h2>
+								<div className="package-options space-y-4">
+									{renderPackageOptions()}
+								</div>
+								{formErrors.package && (
+									<ErrorMessage
+										message={formErrors.package}
+										type="error"
+										className="mt-2"
+									/>
+								)}
+							</div>
+
+							<div className="booking-form-container lg:col-span-2">
+								<h2 className="text-xl font-semibold mb-4">Event Details</h2>
+								<form
+									onSubmit={handleSubmit}
+									className="booking-form bg-[#1e1e1e] rounded-lg p-6 border border-[#333333]">
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div>
+											<label
+												htmlFor="eventType"
+												className="block text-sm font-medium mb-1 text-gray-300">
+												Event Type <span className="text-[#ff5252]">*</span>
+											</label>
+											<select
+												id="eventType"
+												name="eventType"
+												value={formData.eventType}
+												onChange={handleChange}
+												required
+												disabled={submitting}
+												className={`w-full px-3 py-2 rounded-md bg-[#121212] border ${
+													formErrors.eventType
+														? "border-[#ff5252]"
+														: "border-[#333333]"
+												} focus:outline-none focus:ring-2 focus:ring-[#bb86fc] focus:ring-opacity-20`}
+												aria-invalid={!!formErrors.eventType}
+												aria-describedby={
+													formErrors.eventType ? "eventType-error" : undefined
+												}>
+												<option value="">Select Event Type</option>
+												<option value="Birthday">Birthday</option>
+												<option value="Wedding pre-nup">Wedding pre-nup</option>
+												<option value="Debut photoshoot">
+													Debut photoshoot
+												</option>
+												<option value="Maternity">Maternity</option>
+											</select>
+											{formErrors.eventType && (
+												<div
+													id="eventType-error"
+													className="text-[#ff5252] text-xs mt-1">
+													{formErrors.eventType}
+												</div>
+											)}
 										</div>
-									)}
-								</div>
 
-								<FormInput
-									id="date"
-									label="Event Date"
-									type="date"
-									name="date"
-									value={formData.date}
-									onChange={handleChange}
-									min={new Date().toISOString().split("T")[0]}
-									required
-									error={formErrors.date}
-									icon={<FiCalendar />}
-								/>
+										<div>
+											<label
+												htmlFor="date"
+												className="block text-sm font-medium mb-1 text-gray-300">
+												Event Date <span className="text-[#ff5252]">*</span>
+											</label>
+											<div className="relative">
+												<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+													<FiCalendar />
+												</span>
+												<input
+													type="date"
+													id="date"
+													name="date"
+													value={formData.date}
+													onChange={handleChange}
+													required
+													disabled={submitting}
+													min={new Date().toISOString().split("T")[0]}
+													className={`w-full px-3 py-2 pl-10 rounded-md bg-[#121212] border ${
+														formErrors.date
+															? "border-[#ff5252]"
+															: "border-[#333333]"
+													} focus:outline-none focus:ring-2 focus:ring-[#bb86fc] focus:ring-opacity-20`}
+													aria-invalid={!!formErrors.date}
+													aria-describedby={
+														formErrors.date ? "date-error" : undefined
+													}
+												/>
+											</div>
+											{formErrors.date && (
+												<div
+													id="date-error"
+													className="text-[#ff5252] text-xs mt-1">
+													{formErrors.date}
+												</div>
+											)}
+										</div>
 
-								<FormInput
-									id="startTime"
-									label="Start Time"
-									type="time"
-									name="startTime"
-									value={formData.startTime}
-									onChange={handleChange}
-									required
-									error={formErrors.startTime}
-									icon={<FiClock />}
-								/>
+										<div>
+											<label
+												htmlFor="startTime"
+												className="block text-sm font-medium mb-1 text-gray-300">
+												Start Time <span className="text-[#ff5252]">*</span>
+											</label>
+											<div className="relative">
+												<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+													<FiClock />
+												</span>
+												<input
+													type="time"
+													id="startTime"
+													name="startTime"
+													value={formData.startTime}
+													onChange={handleChange}
+													required
+													disabled={submitting}
+													className={`w-full px-3 py-2 pl-10 rounded-md bg-[#121212] border ${
+														formErrors.startTime
+															? "border-[#ff5252]"
+															: "border-[#333333]"
+													} focus:outline-none focus:ring-2 focus:ring-[#bb86fc] focus:ring-opacity-20`}
+													aria-invalid={!!formErrors.startTime}
+													aria-describedby={
+														formErrors.startTime ? "startTime-error" : undefined
+													}
+												/>
+											</div>
+											{formErrors.startTime && (
+												<div
+													id="startTime-error"
+													className="text-[#ff5252] text-xs mt-1">
+													{formErrors.startTime}
+												</div>
+											)}
+										</div>
 
-								<FormInput
-									id="endTime"
-									label="End Time"
-									type="time"
-									name="endTime"
-									value={formData.endTime}
-									readOnly
-									required
-									disabled
-									helperText="End time is calculated based on package duration"
-								/>
+										<div>
+											<label
+												htmlFor="endTime"
+												className="block text-sm font-medium mb-1 text-gray-300">
+												End Time
+											</label>
+											<div className="relative">
+												<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+													<FiClock />
+												</span>
+												<input
+													type="time"
+													id="endTime"
+													name="endTime"
+													value={formData.endTime}
+													readOnly
+													disabled
+													className="w-full px-3 py-2 pl-10 rounded-md bg-[#1a1a1a] border border-[#333333] cursor-not-allowed"
+												/>
+											</div>
+											<p className="text-gray-500 text-xs mt-1">
+												Auto-calculated based on package duration
+											</p>
+										</div>
 
-								<FormInput
-									id="location"
-									label="Event Location"
-									type="text"
-									name="location"
-									value={formData.location}
-									onChange={handleChange}
-									placeholder="Full address of the event"
-									required
-									error={formErrors.location}
-									icon={<FiMapPin />}
-									className="md:col-span-2"
-								/>
+										<div className="md:col-span-2">
+											<label
+												htmlFor="location"
+												className="block text-sm font-medium mb-1 text-gray-300">
+												Event Location <span className="text-[#ff5252]">*</span>
+											</label>
+											<div className="relative">
+												<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+													<FiMapPin />
+												</span>
+												<input
+													type="text"
+													id="location"
+													name="location"
+													value={formData.location}
+													onChange={handleChange}
+													required
+													disabled={submitting}
+													placeholder="Enter the full event location address"
+													className={`w-full px-3 py-2 pl-10 rounded-md bg-[#121212] border ${
+														formErrors.location
+															? "border-[#ff5252]"
+															: "border-[#333333]"
+													} focus:outline-none focus:ring-2 focus:ring-[#bb86fc] focus:ring-opacity-20`}
+													aria-invalid={!!formErrors.location}
+													aria-describedby={
+														formErrors.location ? "location-error" : undefined
+													}
+												/>
+											</div>
+											{formErrors.location && (
+												<div
+													id="location-error"
+													className="text-[#ff5252] text-xs mt-1">
+													{formErrors.location}
+												</div>
+											)}
+										</div>
 
-								<div className="md:col-span-2">
-									<label
-										htmlFor="additionalNotes"
-										className="block text-sm font-medium mb-1 text-gray-300">
-										Additional Notes
-									</label>
-									<textarea
-										id="additionalNotes"
-										name="additionalNotes"
-										value={formData.additionalNotes}
-										onChange={handleChange}
-										placeholder="Any special requests or information"
-										rows="4"
-										className="w-full px-3 py-2 rounded-md bg-[#121212] border border-[#333333] focus:outline-none focus:ring-2 focus:ring-[#bb86fc] focus:ring-opacity-20"></textarea>
-								</div>
-							</div>
-
-							<div className="booking-summary mt-6 p-4 bg-[#121212] rounded-md border border-[#333333]">
-								<h3 className="text-lg font-semibold mb-3 flex items-center">
-									<FiPackage className="mr-2 text-[#bb86fc]" /> Booking Summary
-								</h3>
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-									<div>
-										<p className="text-gray-400 text-sm">Package</p>
-										<p className="font-semibold">
-											{selectedPackage
-												? selectedPackage.name
-												: "No package selected"}
-										</p>
+										<div className="md:col-span-2">
+											<label
+												htmlFor="additionalNotes"
+												className="block text-sm font-medium mb-1 text-gray-300">
+												Special Requests (Optional)
+											</label>
+											<textarea
+												id="additionalNotes"
+												name="additionalNotes"
+												value={formData.additionalNotes}
+												onChange={handleChange}
+												disabled={submitting}
+												placeholder="Any special requests or additional information..."
+												rows="4"
+												className="w-full px-3 py-2 rounded-md bg-[#121212] border border-[#333333] focus:outline-none focus:ring-2 focus:ring-[#bb86fc] focus:ring-opacity-20"
+											/>
+										</div>
 									</div>
-									<div>
-										<p className="text-gray-400 text-sm">Duration</p>
-										<p className="font-semibold">
-											{selectedPackage
-												? `${selectedPackage.duration} hours`
-												: "-"}
-										</p>
-									</div>
-									<div>
-										<p className="text-gray-400 text-sm">Total</p>
-										<p className="font-semibold text-[#bb86fc]">
-											{selectedPackage ? `₱${selectedPackage.price}` : "₱0"}
-										</p>
-									</div>
-								</div>
-							</div>
 
-							<div className="mt-6">
-								<Button
-									type="submit"
-									variant="primary"
-									size="large"
-									fullWidth
-									loading={submitting}
-									disabled={!selectedPackage || submitting}>
-									{submitting ? "Processing..." : "Confirm Booking"}
-								</Button>
+									<div className="mt-6 flex justify-end">
+										<Button
+											type="submit"
+											loading={submitting}
+											disabled={submitting || loadingPackages}
+											className="w-full md:w-auto">
+											{submitting ? "Processing..." : "Confirm Booking"}
+										</Button>
+									</div>
+								</form>
 							</div>
-						</form>
+						</div>
 					</div>
 				</div>
-			</div>
-		</div>
+			</LoadingOverlay>
+		</ErrorBoundary>
 	);
 };
 
