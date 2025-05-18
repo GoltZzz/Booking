@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from "react";
-import { userApi } from "../services/api";
+import { auth } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
@@ -17,8 +17,8 @@ export const AuthProvider = ({ children }) => {
 	useEffect(() => {
 		const checkAuthStatus = async () => {
 			try {
-				const response = await userApi.checkAuth();
-				if (response.data.isAuthenticated) {
+				const response = await auth.getProfile();
+				if (response.data && response.data.user) {
 					setUser(response.data.user);
 					setIsAuthenticated(true);
 				} else {
@@ -43,9 +43,9 @@ export const AuthProvider = ({ children }) => {
 		setLoading(true);
 		setError(null);
 		try {
-			const response = await userApi.login(credentials);
+			const response = await auth.login(credentials);
 
-			if (response.data.isAuthenticated) {
+			if (response.data.isAuthenticated || response.data.user) {
 				setUser(response.data.user);
 				setIsAuthenticated(true);
 				return {
@@ -76,9 +76,13 @@ export const AuthProvider = ({ children }) => {
 		setLoading(true);
 		setError(null);
 		try {
-			const response = await userApi.register(userData);
+			const response = await auth.register(userData);
 
-			if (response.status === 201 || response.data.isAuthenticated) {
+			if (
+				response.status === 201 ||
+				response.data.isAuthenticated ||
+				response.data.user
+			) {
 				setUser(response.data.user);
 				setIsAuthenticated(true);
 				return {
@@ -104,7 +108,7 @@ export const AuthProvider = ({ children }) => {
 	const logout = async () => {
 		setLoading(true);
 		try {
-			await userApi.logout();
+			await auth.logout();
 			setUser(null);
 			setIsAuthenticated(false);
 			navigate("/");
@@ -123,7 +127,7 @@ export const AuthProvider = ({ children }) => {
 	const getProfile = async () => {
 		setLoading(true);
 		try {
-			const response = await userApi.getProfile();
+			const response = await auth.getProfile();
 			setUser(response.data.user);
 			return { success: true, user: response.data.user };
 		} catch (err) {

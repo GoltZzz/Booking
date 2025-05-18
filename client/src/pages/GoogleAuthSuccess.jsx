@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { userApi } from "../services/api";
+import { auth } from "../services/api";
 import googleLogo from "../assets/images/google-logo.png";
 
 const GoogleAuthSuccess = () => {
@@ -17,9 +17,9 @@ const GoogleAuthSuccess = () => {
 			try {
 				// With HTTP-only cookies, we don't need to extract a token from URL
 				// Instead, we'll check auth status with the server
-				const response = await userApi.checkAuth();
+				const response = await auth.getProfile();
 
-				if (response.data.isAuthenticated) {
+				if (response.data && response.data.user) {
 					// Update auth context with user data
 					setUser(response.data.user);
 					setIsAuthenticated(true);

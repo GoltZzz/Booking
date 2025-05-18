@@ -6,6 +6,7 @@ import {
 	FiMapPin,
 	FiCalendar,
 	FiCamera,
+	FiLayout,
 } from "react-icons/fi";
 import LogoImage from "../assets/images/Logo.jpg";
 import BirthdayImage from "../assets/images/birthday.jpg";
@@ -123,6 +124,17 @@ const LandingPage = () => {
 						photoshoot
 					</p>
 
+					{isAuthenticated ? (
+						<div className="mb-8">
+							<Link
+								to="/dashboard"
+								className="inline-flex items-center px-8 py-4 bg-[#bb86fc] text-[#121212] font-bold rounded-lg shadow-lg hover:bg-[#a06cd5] transition-all transform hover:scale-105 duration-300">
+								<FiLayout className="mr-2 text-xl" />
+								Go to Your Dashboard
+							</Link>
+						</div>
+					) : null}
+
 					<form
 						onSubmit={handleSearch}
 						className="w-full max-w-4xl bg-[#1e1e1e] rounded-lg shadow-xl overflow-hidden border border-[#333333]">
@@ -236,11 +248,26 @@ const LandingPage = () => {
 					</div>
 
 					<div className="mt-12 text-center">
-						<Link
-							to="/explore"
-							className="bg-[#bb86fc] text-[#121212] px-8 py-3 rounded-md hover:bg-[#a06cd5] transition-colors">
-							Book a Session
-						</Link>
+						{isAuthenticated ? (
+							<div className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
+								<Link
+									to="/booking"
+									className="bg-[#bb86fc] text-[#121212] px-8 py-3 rounded-md hover:bg-[#a06cd5] transition-colors">
+									Book a Session
+								</Link>
+								<Link
+									to="/dashboard"
+									className="border border-[#bb86fc] text-[#bb86fc] px-8 py-3 rounded-md hover:bg-[#bb86fc] hover:text-[#121212] transition-colors">
+									View Your Dashboard
+								</Link>
+							</div>
+						) : (
+							<Link
+								to="/explore"
+								className="bg-[#bb86fc] text-[#121212] px-8 py-3 rounded-md hover:bg-[#a06cd5] transition-colors">
+								Book a Session
+							</Link>
+						)}
 					</div>
 				</div>
 			</section>
@@ -354,11 +381,18 @@ const LandingPage = () => {
 						their photography needs
 					</p>
 					{isAuthenticated ? (
-						<Link
-							to="/booking"
-							className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
-							Book a Session Now
-						</Link>
+						<div className="flex flex-col md:flex-row justify-center gap-4">
+							<Link
+								to="/booking"
+								className="inline-block bg-[#121212] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2d2d2d] transition-colors">
+								Book a Session Now
+							</Link>
+							<Link
+								to="/dashboard"
+								className="inline-block bg-[#2d2d2d] text-[#e0e0e0] font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#121212] border border-[#121212] transition-colors">
+								Go to Dashboard
+							</Link>
+						</div>
 					) : (
 						<Link
 							to="/register"

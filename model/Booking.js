@@ -6,43 +6,21 @@ const bookingSchema = new mongoose.Schema({
 		ref: "User",
 		required: true,
 	},
-	bookingDate: {
+	eventType: {
+		type: String,
+		required: true,
+	},
+	eventDate: {
 		type: Date,
 		required: true,
 	},
-	startTime: {
+	specialRequest: {
 		type: String,
-		required: true,
-	},
-	endTime: {
-		type: String,
-		required: true,
-	},
-	duration: {
-		type: Number,
-		required: true,
-	},
-	category: {
-		type: String,
-		enum: ["Birthday", "Wedding pre-nup", "Debut photoshoot", "Maternity"],
-		required: true,
-	},
-	packageType: {
-		type: String,
-		enum: ["Basic", "Standard", "Premium"],
-		required: true,
-	},
-	totalPrice: {
-		type: Number,
-		required: true,
 	},
 	status: {
 		type: String,
-		enum: ["pending", "confirmed", "cancelled", "completed"],
+		enum: ["pending", "confirmed", "cancelled"],
 		default: "pending",
-	},
-	specialRequests: {
-		type: String,
 	},
 	createdAt: {
 		type: Date,

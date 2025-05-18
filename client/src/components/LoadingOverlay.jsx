@@ -4,6 +4,16 @@ import { createPortal } from "react-dom";
 import LoadingSpinner from "./LoadingSpinner";
 import { FiLoader } from "react-icons/fi";
 
+/**
+ * Loading overlay component for showing loading state over content
+ *
+ * @param {Object} props - Component props
+ * @param {boolean} props.isLoading - Whether the component is in loading state
+ * @param {string} props.message - Optional message to display during loading
+ * @param {boolean} props.blur - Whether to blur the background content
+ * @param {boolean} props.transparent - Whether to use a transparent background
+ * @param {React.ReactNode} props.children - Child components to render
+ */
 const LoadingOverlay = ({
 	isLoading,
 	message = "Loading...",
@@ -82,8 +92,24 @@ const LoadingOverlay = ({
 	// For inline overlay, wrap content and the children
 	return (
 		<div className="relative">
-			{children}
-			{loadingContent}
+			{/* The content */}
+			<div
+				className={
+					isLoading && blur ? "filter blur-sm transition-all duration-200" : ""
+				}>
+				{children}
+			</div>
+
+			{/* The overlay */}
+			{isLoading && (
+				<div
+					className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-200 z-50 ${
+						transparent ? "bg-gray-900/30" : "bg-gray-900/70"
+					}`}>
+					<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+					{message && <p className="mt-4 text-white font-medium">{message}</p>}
+				</div>
+			)}
 		</div>
 	);
 };

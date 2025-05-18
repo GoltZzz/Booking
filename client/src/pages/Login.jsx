@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -14,9 +14,14 @@ const Login = () => {
 		password: "",
 	});
 	const [errors, setErrors] = useState({});
-	const { login, googleLogin, loading } = useAuth();
+	const { login, googleLogin, loading, user } = useAuth();
 	const toast = useToast();
 	const navigate = useNavigate();
+
+	// Debug logging
+	useEffect(() => {
+		console.log("Login Page - Current User:", user);
+	}, [user]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -59,16 +64,28 @@ const Login = () => {
 		if (!validateForm()) return;
 
 		try {
+			console.log("Logging in with:", formData);
 			const result = await login(formData);
+			console.log("Login result:", result);
 
 			if (result.success) {
 				toast.success("Login successful!");
-				navigate("/");
+
+				// If user is admin, redirect to admin panel
+				if (result.user && result.user.isAdmin) {
+					console.log("Admin user detected, redirecting to admin panel");
+					navigate("/admin/bookings");
+				} else {
+					// Regular user, go to dashboard
+					console.log("Regular user detected, redirecting to dashboard");
+					navigate("/dashboard");
+				}
 			} else {
 				toast.error(result.error || "Login failed. Please try again.");
 				setErrors({ general: result.error });
 			}
-		} catch {
+		} catch (error) {
+			console.error("Login error:", error);
 			toast.error("An unexpected error occurred. Please try again.");
 			setErrors({ general: "An unexpected error occurred" });
 		}

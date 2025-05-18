@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "../context/ToastContext";
 
 /**
@@ -77,106 +77,93 @@ export const withErrorHandling = async (apiCall, options = {}) => {
 };
 
 /**
- * React hook for using API calls with error handling
- * @param {Function} apiCall - The API call function to execute
- * @param {Object} options - Configuration options
- * @returns {Array} [execute, data, loading, error, reset]
+ * Custom hook for managing API calls with loading and error states
+ *
+ * @param {Function} apiFunction - The API function to call
+ * @param {Object} options - Options for the API call
+ * @param {string} options.errorMessage - Default error message to show
+ * @param {string} options.successMessage - Success message to show on successful API call
+ * @param {boolean} options.showSuccessToast - Whether to show a success toast
+ * @param {boolean} options.showErrorToast - Whether to show an error toast
+ * @param {Function} options.onSuccess - Callback for successful API call
+ * @param {Function} options.onError - Callback for API call errors
+ * @returns {Array} - [executeCall, data, loading, error, resetState]
  */
-export const useApiCall = (apiCall, options = {}) => {
+export const useApiCall = (apiFunction, options = {}) => {
+	const {
+		errorMessage = "An error occurred",
+		successMessage = "Operation completed successfully",
+		showSuccessToast = false,
+		showErrorToast = true,
+		onSuccess,
+		onError,
+		isLogin = false,
+	} = options;
+
 	const [data, setData] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const toast = useToast();
 
-	// Use ref to store options to avoid dependency changes
-	const optionsRef = useRef(options);
-
-	// Keep reference updated without triggering renders
-	useEffect(() => {
-		optionsRef.current = options;
-	}, [options]);
-
-	const execute = useCallback(
-		async (...args) => {
-			setLoading(true);
-			setError(null);
-
-			// Use the current ref value instead of the dependency
-			const currentOptions = optionsRef.current;
-
-			try {
-				if (currentOptions.isRegistration || currentOptions.isLogin) {
-					try {
-						const result = await apiCall(...args);
-
-						if (result && result.success) {
-							setData(result);
-							if (currentOptions.showSuccessToast && toast) {
-								toast.success(
-									currentOptions.successMessage ||
-										`${
-											currentOptions.isLogin ? "Login" : "Registration"
-										} successful`
-								);
-							}
-							return result;
-						} else {
-							const errorMsg =
-								result?.error ||
-								currentOptions.errorMessage ||
-								`${currentOptions.isLogin ? "Login" : "Registration"} failed`;
-							setError(errorMsg);
-							if (currentOptions.showErrorToast && toast) {
-								toast.error(errorMsg);
-							}
-							return null;
-						}
-					} catch (err) {
-						const errorMsg =
-							err.response?.data?.error ||
-							currentOptions.errorMessage ||
-							`${currentOptions.isLogin ? "Login" : "Registration"} failed`;
-						setError(errorMsg);
-						if (currentOptions.showErrorToast && toast) {
-							toast.error(errorMsg);
-						}
-						return null;
-					}
-				} else {
-					const result = await withErrorHandling(() => apiCall(...args), {
-						...currentOptions,
-						toast,
-					});
-
-					if (result.success) {
-						setData(result.data);
-						return result.data;
-					} else {
-						setError(result.error);
-						return null;
-					}
-				}
-			} catch {
-				setError(currentOptions.errorMessage || "An unexpected error occurred");
-				toast.error(
-					currentOptions.errorMessage || "An unexpected error occurred"
-				);
-				return null;
-			} finally {
-				setLoading(false);
-			}
-		},
-		// Only depend on apiCall and toast, not on options
-		[apiCall, toast]
-	);
-
-	const reset = useCallback(() => {
+	// Reset state function
+	const resetState = useCallback(() => {
 		setData(null);
 		setLoading(false);
 		setError(null);
 	}, []);
 
-	return [execute, data, loading, error, reset];
+	// Execute the API call
+	const executeCall = useCallback(
+		async (...args) => {
+			setLoading(true);
+			setError(null);
+
+			try {
+				const result = await apiFunction(...args);
+				setData(result);
+
+				if (showSuccessToast && !isLogin) {
+					toast.success(successMessage);
+				}
+
+				if (onSuccess) {
+					onSuccess(result);
+				}
+
+				setLoading(false);
+				return result;
+			} catch (err) {
+				console.error("API call error:", err);
+
+				const errorMsg = err.response?.data?.error || errorMessage;
+				setError(errorMsg);
+
+				if (showErrorToast && !isLogin) {
+					toast.error(errorMsg);
+				}
+
+				if (onError) {
+					onError(err);
+				}
+
+				setLoading(false);
+				throw err;
+			}
+		},
+		[
+			apiFunction,
+			errorMessage,
+			successMessage,
+			showSuccessToast,
+			showErrorToast,
+			onSuccess,
+			onError,
+			toast,
+			isLogin,
+		]
+	);
+
+	return [executeCall, data, loading, error, resetState];
 };
 
 /**
@@ -248,4 +235,63 @@ export const getErrorMessage = (error) => {
 	} else {
 		return error.message || "An unexpected error occurred";
 	}
+};
+
+/**
+ * Format date string to a human-readable format
+ *
+ * @param {string} dateString - ISO date string
+ * @param {Object} options - Format options
+ * @returns {string} - Formatted date string
+ */
+export const formatDate = (dateString, options = {}) => {
+	if (!dateString) return "";
+
+	const date = new Date(dateString);
+
+	// Default options
+	const defaultOptions = {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		...options,
+	};
+
+	return date.toLocaleDateString(undefined, defaultOptions);
+};
+
+/**
+ * Safely access nested object properties
+ *
+ * @param {Object} obj - The object to access
+ * @param {string} path - Dot notation path to the property
+ * @param {any} defaultValue - Default value if property doesn't exist
+ * @returns {any} - The property value or default value
+ */
+export const getProperty = (obj, path, defaultValue = "") => {
+	if (!obj || !path) return defaultValue;
+
+	const keys = path.split(".");
+	let result = obj;
+
+	for (const key of keys) {
+		if (
+			result === null ||
+			result === undefined ||
+			!Object.prototype.hasOwnProperty.call(result, key)
+		) {
+			return defaultValue;
+		}
+		result = result[key];
+	}
+
+	return result === null || result === undefined ? defaultValue : result;
+};
+
+export default {
+	useApiCall,
+	formatDate,
+	getProperty,
 };

@@ -1,94 +1,131 @@
 import axios from "axios";
 
-const api = axios.create({
-	baseURL: "/api",
+const BASE_URL = "http://localhost:3000/api";
+
+// Create an axios instance with credentials support
+const axiosInstance = axios.create({
+	baseURL: BASE_URL,
+	withCredentials: true,
 	headers: {
 		"Content-Type": "application/json",
 	},
-	withCredentials: true, // Enable sending cookies with requests
 });
 
-// Add request interceptor for logging
-api.interceptors.request.use(
+// Add interceptor to attach auth token from localStorage if available
+axiosInstance.interceptors.request.use(
 	(config) => {
+		// Check if token exists in localStorage or cookies (depends on your auth implementation)
+		const token = localStorage.getItem("token");
+		if (token) {
+			console.log("Attaching token to request");
+			config.headers["Authorization"] = `Bearer ${token}`;
+		}
 		return config;
 	},
-	(error) => {
-		return Promise.reject(error);
-	}
+	(error) => Promise.reject(error)
 );
 
-// Add a response interceptor to handle token expiration and logging
-api.interceptors.response.use(
+// Add interceptor to handle token refresh or authentication errors
+axiosInstance.interceptors.response.use(
 	(response) => {
+		// Check if this is a login response with a token
+		if (response.data && response.data.token) {
+			console.log("Saving token from response");
+			localStorage.setItem("token", response.data.token);
+		}
 		return response;
 	},
 	async (error) => {
-		const originalRequest = error.config;
+		if (error.response) {
+			console.error("API error:", error.response.status, error.response.data);
 
-		// If the error is 401 and we haven't already tried to refresh
-		if (error.response?.status === 401 && !originalRequest._retry) {
-			originalRequest._retry = true;
-
-			try {
-				// Try to refresh the token
-				await axios.post("/api/users/refresh", {}, { withCredentials: true });
-
-				// Retry the original request
-				return api(originalRequest);
-			} catch (refreshError) {
-				// If refresh fails, redirect to login
-				window.location.href = "/login";
-				return Promise.reject(refreshError);
+			// Handle 401 Unauthorized errors
+			if (error.response.status === 401) {
+				console.log("Unauthorized access, redirecting to login");
+				localStorage.removeItem("token");
+				// Only redirect if not already on login page
+				if (window.location.pathname !== "/login") {
+					window.location.href = "/login";
+				}
 			}
 		}
-
 		return Promise.reject(error);
 	}
 );
 
-// User related API calls
-export const userApi = {
-	login: (credentials) => api.post("/users/login", credentials),
-	register: (userData) => api.post("/users/register", userData),
-	logout: () => api.post("/users/logout"),
-	getProfile: () => api.get("/users/profile"),
-	checkAuth: () => api.get("/users/check-auth"),
-	refreshToken: () => api.post("/users/refresh"),
+// Auth-related API calls
+const auth = {
+	login: async (credentials) => {
+		const response = await axiosInstance.post("/users/login", credentials);
+		// Store token if returned from login
+		if (response.data && response.data.token) {
+			console.log("Storing token from login response");
+			localStorage.setItem("token", response.data.token);
+		} else if (response.data && response.data.accessToken) {
+			console.log("Storing accessToken from login response");
+			localStorage.setItem("token", response.data.accessToken);
+		}
+		return response;
+	},
+	register: (userData) => axiosInstance.post("/users/register", userData),
+	logout: async () => {
+		const response = await axiosInstance.post("/users/logout");
+		localStorage.removeItem("token");
+		return response;
+	},
+	getProfile: () => axiosInstance.get("/users/profile"),
+	// For backward compatibility
+	checkAuth: () => axiosInstance.get("/users/profile"),
 };
 
-// Booking related API calls
-export const bookingApi = {
-	getBookings: () => api.get("/bookings"),
-	createBooking: (bookingData) => api.post("/bookings", bookingData),
-	getBooking: (id) => api.get(`/bookings/${id}`),
-	updateBooking: (id, bookingData) => api.put(`/bookings/${id}`, bookingData),
-	deleteBooking: (id) => api.delete(`/bookings/${id}`),
+// Add this function to directly check admin status
+const checkAdminStatus = async () => {
+	const response = await axiosInstance.get("/users/profile");
+	if (response.data && response.data.user && response.data.user.isAdmin) {
+		return true;
+	}
+	return false;
 };
 
-// Package related API calls
-export const packageApi = {
-	getPackages: () => api.get("/packages"),
-	getPackage: (id) => api.get(`/packages/${id}`),
+// Booking-related API calls
+const bookingApi = {
+	// User booking endpoints
+	createBooking: (bookingData) => axiosInstance.post("/bookings", bookingData),
+	getUserBookings: () => axiosInstance.get("/bookings"),
+	getBookingById: (id) => axiosInstance.get(`/bookings/${id}`),
+
+	// Admin booking endpoints
+	getAllBookings: () => axiosInstance.get("/bookings/all"),
+	confirmBooking: (id) => axiosInstance.put(`/bookings/${id}/confirm`),
+	updateBookingStatus: (id, status) =>
+		axiosInstance.put(`/bookings/${id}/status`, { status }),
 };
 
-// Admin related API calls
-export const adminApi = {
+// Admin-related API calls
+const adminApi = {
 	// Dashboard statistics
-	getStats: () => api.get("/admin/stats"),
+	getStats: () => axiosInstance.get("/admin/stats"),
 
 	// User management
-	getUsers: () => api.get("/admin/users"),
-	getUser: (id) => api.get(`/admin/users/${id}`),
-	updateUser: (id, userData) => api.patch(`/admin/users/${id}`, userData),
-	deleteUser: (id) => api.delete(`/admin/users/${id}`),
+	getAllUsers: () => axiosInstance.get("/admin/users"),
+	getUsers: () => axiosInstance.get("/admin/users"),
+	updateUser: (id, userData) =>
+		axiosInstance.patch(`/admin/users/${id}`, userData),
+	deleteUser: (id) => axiosInstance.delete(`/admin/users/${id}`),
 
 	// Booking management
-	getAllBookings: () => api.get("/admin/bookings"),
-	getBookingDetails: (id) => api.get(`/admin/bookings/${id}`),
-	updateBookingDetails: (id, bookingData) =>
-		api.patch(`/admin/bookings/${id}`, bookingData),
-	deleteBooking: (id) => api.delete(`/admin/bookings/${id}`),
+	getAllBookings: () => axiosInstance.get("/bookings/all"),
+	confirmBooking: (id) => axiosInstance.put(`/bookings/${id}/confirm`),
+	updateBookingStatus: (id, status) =>
+		axiosInstance.put(`/bookings/${id}/status`, { status }),
 };
 
+// Combine all API methods
+const api = {
+	...auth,
+	...bookingApi,
+	checkAdminStatus,
+};
+
+export { auth, adminApi, bookingApi };
 export default api;

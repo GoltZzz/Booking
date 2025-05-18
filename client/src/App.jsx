@@ -11,6 +11,7 @@ import UserManagement from "./pages/admin/UserManagement";
 import BookingManagement from "./pages/admin/BookingManagement";
 import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AuthRefresher from "./components/AuthRefresher";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import "./App.css";
@@ -25,6 +26,7 @@ function App() {
 			<Router>
 				<AuthProvider>
 					<ToastProvider>
+						<AuthRefresher />
 						<Routes>
 							<Route path="/" element={<LandingPage />} />
 							<Route path="/home" element={<Home />} />

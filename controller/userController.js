@@ -90,6 +90,7 @@ const register = async (req, res) => {
 					profilePicture: user.profilePicture,
 					isAdmin: user.isAdmin,
 				},
+				token: accessToken, // Include token in the response
 				tokenExpiry: accessTokenExpiry,
 				isAuthenticated: true,
 			};
@@ -130,6 +131,7 @@ const login = (req, res, next) => {
 			res.cookie("accessToken", accessToken, cookieOptions);
 			res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
+			// Include the token in the response as well for client-side storage
 			return res.json({
 				message: "Login successful",
 				user: {
@@ -140,6 +142,7 @@ const login = (req, res, next) => {
 					profilePicture: user.profilePicture,
 					isAdmin: user.isAdmin,
 				},
+				token: accessToken, // Include token in the response
 				tokenExpiry: accessTokenExpiry,
 				isAuthenticated: true,
 			});
@@ -260,10 +263,20 @@ const refreshToken = async (req, res) => {
 
 const getProfile = async (req, res) => {
 	try {
+		console.log("getProfile called");
+		console.log("Authenticated via Passport:", req.isAuthenticated());
+		console.log("User in request:", req.user);
+
 		// If using Passport session
 		const user = req.isAuthenticated()
 			? req.user
 			: await User.findById(req.user._id).select("-password");
+
+		console.log("User retrieved:", user);
+		console.log("Is admin?", user.isAdmin);
+
+		// Get a fresh token to ensure it's valid
+		const { token: accessToken } = await tokenService.generateAccessToken(user);
 
 		res.json({
 			user: {
@@ -275,9 +288,11 @@ const getProfile = async (req, res) => {
 				profilePicture: user.profilePicture,
 				isAdmin: user.isAdmin,
 			},
+			token: accessToken,
 			isAuthenticated: true,
 		});
 	} catch (error) {
+		console.error("Error in getProfile:", error);
 		res.status(500).json({ error: error.message });
 	}
 };

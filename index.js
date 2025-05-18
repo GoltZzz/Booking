@@ -99,6 +99,16 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/packages", packageRoutes);
 app.use("/api/admin", adminRoutes);
 
+// Global error handler
+app.use((err, req, res, next) => {
+	console.error("Global Error Handler:", err);
+	res.status(500).json({
+		error: "An unexpected error occurred",
+		message: err.message,
+		stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+	});
+});
+
 // Serve React frontend in production
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "client/dist")));
@@ -125,4 +135,14 @@ mongoose
 // Start server
 app.listen(port, () => {
 	console.log(`Server running on port ${port}`);
+});
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (reason, promise) => {
+	console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (error) => {
+	console.error("Uncaught Exception:", error);
 });
