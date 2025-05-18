@@ -1,9 +1,17 @@
 import React from "react";
 import Modal from "./Modal";
 import Button from "./Button";
-import { FiLogOut, FiLoader } from "react-icons/fi";
+import { FiLogOut, FiLoader, FiHome } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const LogoutConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading }) => {
+	const navigate = useNavigate();
+
+	const goToHomePage = () => {
+		navigate("/");
+		onClose();
+	};
+
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} title="Confirm Logout">
 			<div className="p-4">
@@ -21,25 +29,36 @@ const LogoutConfirmationModal = ({ isOpen, onClose, onConfirm, isLoading }) => {
 					You will need to sign in again to access your account.
 				</p>
 
-				<div className="flex space-x-3">
-					<Button
-						variant="outline"
-						fullWidth
-						onClick={onClose}
-						disabled={isLoading}>
-						Cancel
-					</Button>
+				<div className="flex flex-col space-y-3">
+					<div className="flex space-x-3">
+						<Button
+							variant="outline"
+							fullWidth
+							onClick={onClose}
+							disabled={isLoading}>
+							Cancel
+						</Button>
+
+						<Button
+							variant="danger"
+							fullWidth
+							onClick={onConfirm}
+							loading={isLoading}
+							disabled={isLoading}
+							icon={
+								isLoading ? <FiLoader className="animate-spin" /> : <FiLogOut />
+							}>
+							{isLoading ? "Logging out..." : "Logout"}
+						</Button>
+					</div>
 
 					<Button
-						variant="danger"
+						variant="primary"
 						fullWidth
-						onClick={onConfirm}
-						loading={isLoading}
+						onClick={goToHomePage}
 						disabled={isLoading}
-						icon={
-							isLoading ? <FiLoader className="animate-spin" /> : <FiLogOut />
-						}>
-						{isLoading ? "Logging out..." : "Logout"}
+						icon={<FiHome />}>
+						Go to Home Page
 					</Button>
 				</div>
 			</div>
