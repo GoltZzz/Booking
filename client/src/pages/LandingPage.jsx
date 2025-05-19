@@ -533,6 +533,15 @@ const LandingPage = () => {
 						<p className="text-gray-500 text-sm">
 							© {new Date().getFullYear()} MJ Studios. All rights reserved.
 						</p>
+						<p className="text-gray-500 text-sm ">
+							powered by{" "}
+							<a
+								className="font-semibold text-[#bb86fc]"
+								href="https://www.northeasterncollege.edu.ph/college-of-information-technology-bsit/">
+								NC-CIT
+							</a>
+						</p>
+
 						<div className="flex space-x-6 mt-4 md:mt-0">
 							<a
 								href="#"
