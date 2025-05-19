@@ -15,6 +15,7 @@ import DebutImage from "../assets/images/debut.jpg";
 import MaternityImage from "../assets/images/maternity.jpg";
 import MainNavbar from "../components/MainNavbar";
 import { useAuth } from "../context/AuthContext";
+import NcCitLogo from "../assets/images/nc cit.png";
 
 const LandingPage = () => {
 	const [searchData, setSearchData] = useState({
@@ -533,15 +534,22 @@ const LandingPage = () => {
 						<p className="text-gray-500 text-sm">
 							© {new Date().getFullYear()} MJ Studios. All rights reserved.
 						</p>
-						<p className="text-gray-500 text-sm ">
-							powered by{" "}
+						<div className="flex items-center space-x-2 mt-4 md:mt-0">
+							<span className="text-gray-500 text-sm">powered by</span>
 							<a
-								className="font-semibold text-[#bb86fc]"
-								href="https://www.northeasterncollege.edu.ph/college-of-information-technology-bsit/">
+								className="font-semibold text-[#bb86fc] flex items-center"
+								href="https://www.northeasterncollege.edu.ph/college-of-information-technology-bsit/"
+								target="_blank"
+								rel="noopener noreferrer">
+								<img
+									src={NcCitLogo}
+									alt="NC CIT Logo"
+									className="h-7 w-auto object-contain mr-1 drop-shadow-md"
+									style={{ maxWidth: 40 }}
+								/>
 								NC-CIT
 							</a>
-						</p>
-
+						</div>
 						<div className="flex space-x-6 mt-4 md:mt-0">
 							<a
 								href="#"
